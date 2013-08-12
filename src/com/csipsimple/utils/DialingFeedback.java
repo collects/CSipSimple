@@ -38,14 +38,14 @@ import java.util.TimerTask;
 
 public class DialingFeedback {
 
-	/** The length of vibrate (haptic) feedback in milliseconds */
-	private static final int HAPTIC_LENGTH_MS = 50;
+    /** The length of vibrate (haptic) feedback in milliseconds */
+    private static final int HAPTIC_LENGTH_MS = 50;
 	
     /** The length of DTMF tones in milliseconds */
-    private static final int TONE_LENGTH_MS = 150;
+    private static final int TONE_LENGTH_MS = 200;
 
     /** The DTMF tone volume relative to other sounds in the stream */
-    private static final int TONE_RELATIVE_VOLUME = 80;
+    private static final int TONE_RELATIVE_VOLUME = 75;
 
     private boolean inCall;
     private int toneStream;
