@@ -33,6 +33,7 @@ import android.view.MotionEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnTouchListener;
+import android.view.View.OnKeyListener;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 
@@ -44,7 +45,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class Dialpad extends FrameLayout implements OnTouchListener
+public class Dialpad extends FrameLayout
+    implements OnTouchListener,	OnKeyListener
 {
 
 	private OnDialKeyListener onDialKeyListener;
@@ -127,6 +129,7 @@ public class Dialpad extends FrameLayout implements OnTouchListener
 			ImageButton button = (ImageButton) findViewById(buttonId);
 			if(button != null) {
 			    button.setOnTouchListener(this);
+			    button.setOnKeyListener(this);
 			}
 		}
 	}
@@ -148,6 +151,17 @@ public class Dialpad extends FrameLayout implements OnTouchListener
 			onDialKeyListener.onTrigger(datas[1], datas[0]);
 		}
 	}
+
+    @Override
+    public boolean onKey(View v, int keyCode, KeyEvent event) {
+	if (v.isEnabled() && v.isPressed() && event.getAction() == KeyEvent.ACTION_UP) {
+	    if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_ENTER) {
+		dispatchDialKeyEvent(v.getId());
+		mPadTouchStamp = System.currentTimeMillis();
+	    }
+	}
+	return false;
+    }
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
