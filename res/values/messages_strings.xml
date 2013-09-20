@@ -108,6 +108,8 @@
     -->
     <string name="menu_add_to_contacts">Add to Contacts</string>
 
+    <string name="menu_add_to_contacts">Add buddy</string>
+
     <!-- Sender to be used if the sender address has been hidden -->
     <string name="hidden_sender_address">Hidden sender address</string>
 

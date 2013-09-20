@@ -1,0 +1,11 @@
+*~
+.svn
+.svn
+/obj
+/bin
+/out
+/gen
+/libs
+/ActionBarSherlock
+.pc
+.patched_sources

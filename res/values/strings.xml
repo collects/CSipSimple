@@ -32,6 +32,11 @@
     <string name="delete_account">Delete account</string>
     <string name="modify_account">Modify account</string>
     <string name="add_account">Add account</string>
+    <string name="add">Add</string>
+    <string name="title_add_contact">Add Contact</string>
+    <string name="subscribe_presence_status">Subscribe presence status</string>
+    <string name="display_name">Display Name</string>
+    <string name="sip_number">SIP Number</string>
     <string name="choose_wizard">Choose wizard</string>
     <string name="use">Use :</string>
     <string name="use_pstn">Use mobile</string>
@@ -50,6 +55,7 @@
     <string name="callLog_delDialog_yes">Yes</string>
     <string name="callLog_delDialog_no">No</string>
     <string name="gsm">Mobile</string>
+    <string name="busylamp_tab_name_text">Dial</string>
     <string name="dial_tab_name_text">Dial</string>
     <string name="calllog_tab_name_text">CallLogs</string>
     <string name="messages_tab_name_text">Messages</string>
@@ -108,6 +114,7 @@
     <string name="activate_presence_sharing">Share presence</string>
     <string name="deactivate_presence_sharing">Stop sharing presence</string>
     <string name="presence">Presence</string>
+    <string name="subscribe_presence">Subscribe Presence</string>
     <string name="configure">Configure</string>
     <string name="set_android_group">Choose android group</string>
     <string name="set_sip_data">Choose sip uri data</string>

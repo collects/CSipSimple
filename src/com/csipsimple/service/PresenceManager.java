@@ -37,7 +37,8 @@ import com.csipsimple.utils.contacts.ContactsWrapper;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PresenceManager {
+public class PresenceManager
+{
     private static final String THIS_FILE = "PresenceManager";
 
     private static final String[] ACC_PROJECTION = new String[] {
@@ -79,9 +80,8 @@ public class PresenceManager {
      */
     private synchronized List<String> getBuddiesForAccount(SipProfile acc){
         if(service != null) {
-            return ContactsWrapper.getInstance().getCSipPhonesByGroup(service,
-                    acc.display_name);
-        }else {
+            return ContactsWrapper.getInstance().getCSipPhonesByGroup(service, acc.display_name);
+        } else {
             return new ArrayList<String>();
         }
     }
@@ -96,10 +96,8 @@ public class PresenceManager {
 
         if (toAdd.size() > 0 && service != null) {
             service.getExecutor().execute(new SipRunnable() {
-
                 @Override
                 protected void doRun() throws SameThreadException {
-
                     for (String csipUri : toAdd) {
                         service.addBuddy("sip:" + csipUri);
                     }
@@ -108,7 +106,6 @@ public class PresenceManager {
         }
         addedAccounts.add(acc);
     }
-    
     
     /**
      * Delete buddies for a given account
@@ -237,5 +234,4 @@ public class PresenceManager {
         }
         
     }
-
 }

@@ -159,7 +159,7 @@ public class SipProfile implements Parcelable {
      * Uri of accounts / sip profiles
      */
     public final static Uri ACCOUNT_URI = Uri.parse(ContentResolver.SCHEME_CONTENT + "://"
-            + SipManager.AUTHORITY + "/" + ACCOUNTS_TABLE_NAME);
+						    + SipManager.AUTHORITY + "/" + ACCOUNTS_TABLE_NAME);
     /**
      * Base uri for the account / sip profile. <br/>
      * To append with {@link #FIELD_ID}
@@ -167,7 +167,7 @@ public class SipProfile implements Parcelable {
      * @see ContentUris#appendId(android.net.Uri.Builder, long)
      */
     public final static Uri ACCOUNT_ID_URI_BASE = Uri.parse(ContentResolver.SCHEME_CONTENT + "://"
-            + SipManager.AUTHORITY + "/" + ACCOUNTS_TABLE_NAME + "/");
+							    + SipManager.AUTHORITY + "/" + ACCOUNTS_TABLE_NAME + "/");
 
     // Content Provider - account status
     /**
@@ -179,17 +179,17 @@ public class SipProfile implements Parcelable {
      * Content type for sip profile adding/registration state
      */
     public final static String ACCOUNT_STATUS_CONTENT_TYPE = SipManager.BASE_DIR_TYPE
-            + ".account_status";
+	+ ".account_status";
     /**
      * Content type for sip profile adding/registration state item
      */
     public final static String ACCOUNT_STATUS_CONTENT_ITEM_TYPE = SipManager.BASE_ITEM_TYPE
-            + ".account_status";
+	+ ".account_status";
     /**
      * Uri for the sip profile adding/registration state.
      */
     public final static Uri ACCOUNT_STATUS_URI = Uri.parse(ContentResolver.SCHEME_CONTENT + "://"
-            + SipManager.AUTHORITY + "/" + ACCOUNTS_STATUS_TABLE_NAME);
+							   + SipManager.AUTHORITY + "/" + ACCOUNTS_STATUS_TABLE_NAME);
     /**
      * Base uri for the sip profile adding/registration state. <br/>
      * To append with {@link #FIELD_ID}
@@ -197,8 +197,22 @@ public class SipProfile implements Parcelable {
      * @see ContentUris#appendId(android.net.Uri.Builder, long)
      */
     public final static Uri ACCOUNT_STATUS_ID_URI_BASE = Uri.parse(ContentResolver.SCHEME_CONTENT
-            + "://"
-            + SipManager.AUTHORITY + "/" + ACCOUNTS_STATUS_TABLE_NAME + "/");
+								   + "://"
+								   + SipManager.AUTHORITY + "/" + ACCOUNTS_STATUS_TABLE_NAME + "/");
+
+    /**
+     * Table name of content provider for buddy storage.
+     */
+    public final static String BUDDIES_TABLE_NAME = "buddies";
+
+    /**
+     * Uri for accessing buddies.
+     */
+    public final static Uri BUDDY_URI = Uri.parse(ContentResolver.SCHEME_CONTENT + "://"
+						  + SipManager.AUTHORITY + "/" + BUDDIES_TABLE_NAME);
+
+    public final static Uri BUDDY_ID_URI_BASE = Uri.parse(ContentResolver.SCHEME_CONTENT + "://"
+							  + SipManager.AUTHORITY + "/" + BUDDIES_TABLE_NAME + "/");
 
     // Fields for table accounts
     /**
@@ -229,6 +243,14 @@ public class SipProfile implements Parcelable {
      * @see String
      */
     public static final String FIELD_DISPLAY_NAME = "display_name";
+    /**
+     * The contact number.
+     */
+    public static final String FIELD_CONTACT = "contact";
+    /**
+     * The subscribe.
+     */
+    public static final String FIELD_SUBSCRIBE = "subscribe";
     /**
      * The priority of the account.<br/>
      * This is used in the interface when presenting list of accounts.<br/>
@@ -753,7 +775,7 @@ public class SipProfile implements Parcelable {
      * Should media use ipv6?
      */
     public static final String FIELD_IPV6_MEDIA_USE = "ipv6_media_use";
-    
+
     /**
      * Simple project to use if you want to list accounts with basic infos on it
      * only.
@@ -767,13 +789,13 @@ public class SipProfile implements Parcelable {
      * @see #FIELD_REG_URI
      */
     public static final String[] LISTABLE_PROJECTION = new String[] {
-            SipProfile.FIELD_ID,
-            SipProfile.FIELD_ACC_ID,
-            SipProfile.FIELD_ACTIVE,
-            SipProfile.FIELD_DISPLAY_NAME,
-            SipProfile.FIELD_WIZARD,
-            SipProfile.FIELD_PRIORITY,
-            SipProfile.FIELD_REG_URI
+	SipProfile.FIELD_ID,
+	SipProfile.FIELD_ACC_ID,
+	SipProfile.FIELD_ACTIVE,
+	SipProfile.FIELD_DISPLAY_NAME,
+	SipProfile.FIELD_WIZARD,
+	SipProfile.FIELD_PRIORITY,
+	SipProfile.FIELD_REG_URI
     };
 
     // Properties
@@ -1054,7 +1076,7 @@ public class SipProfile implements Parcelable {
         pidf_tuple_id = getReadParcelableString(in.readString());
         force_contact = getReadParcelableString(in.readString());
         proxies = TextUtils.split(getReadParcelableString(in.readString()),
-                Pattern.quote(PROXIES_SEPARATOR));
+				  Pattern.quote(PROXIES_SEPARATOR));
         realm = getReadParcelableString(in.readString());
         username = getReadParcelableString(in.readString());
         datatype = in.readInt();
@@ -1117,7 +1139,7 @@ public class SipProfile implements Parcelable {
      * @see Parcelable#describeContents()
      */
     @Override
-    public int describeContents() {
+	public int describeContents() {
         return 0;
     }
 
@@ -1125,7 +1147,7 @@ public class SipProfile implements Parcelable {
      * @see Parcelable#writeToParcel(Parcel, int)
      */
     @Override
-    public void writeToParcel(Parcel dest, int flags) {
+	public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(primaryKey);
         dest.writeInt((int) id);
         dest.writeString(display_name);
@@ -1711,8 +1733,8 @@ public class SipProfile implements Parcelable {
         SipProfile account = new SipProfile();
         if (accountId != INVALID_ID) {
             Cursor c = ctxt.getContentResolver().query(
-                    ContentUris.withAppendedId(ACCOUNT_ID_URI_BASE, accountId),
-                    projection, null, null, null);
+						       ContentUris.withAppendedId(ACCOUNT_ID_URI_BASE, accountId),
+						       projection, null, null, null);
 
             if (c != null) {
                 try {
@@ -1756,7 +1778,7 @@ public class SipProfile implements Parcelable {
         if (onlyActive) {
             selection = SipProfile.FIELD_ACTIVE + "=?";
             selectionArgs = new String[] {
-                    "1"
+		"1"
             };
         }
         Cursor c = ctxt.getContentResolver().query(ACCOUNT_URI, projection, selection, selectionArgs, null);

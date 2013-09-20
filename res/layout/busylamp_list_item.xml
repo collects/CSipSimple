@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*
+ * Copyright (C) 2013 Duzy Chan <code@duzy.info>
+ */
+-->
+
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    >
+
+  <LinearLayout
+      android:id="@+id/message_block"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:layout_alignParentTop="true"
+      android:minHeight="@dimen/message_contact_photo_size"
+      android:orientation="vertical"
+      >
+
+    <TextView
+	android:id="@+id/text_view"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:autoLink="all"
+	android:linksClickable="false"
+	android:paddingLeft="@dimen/message_item_text_padding_left_right"
+	android:paddingRight="@dimen/message_item_text_padding_left_right"
+	android:paddingTop="@dimen/message_item_text_padding_top"
+	android:textAppearance="?android:attr/textAppearanceSmall"
+	android:textColor="?android:attr/textColorPrimary"
+	android:textSize="16sp"
+	/>
+
+  </LinearLayout>
+
+</RelativeLayout>

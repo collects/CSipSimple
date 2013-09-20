@@ -1439,6 +1439,17 @@ public class PjSipService {
         return toCall;
     }
 
+    public int getBuddies() {
+	int num = (int) pjsua.get_buddy_count();
+	int[] ids = new int[num];
+	long[] count = new long[1];
+	pjsua.enum_buddies(ids, count);
+
+	Log.d(THIS_FILE, "getBuddies: num="+num+", "+ids.length+", "+count[0]);
+
+	return (int) count[0];
+    }
+
     /**
      * Add a buddy to buddies list
      * 
@@ -1446,6 +1457,8 @@ public class PjSipService {
      * @throws SameThreadException
      */
     public int addBuddy(String buddyUri) throws SameThreadException {
+	Log.d(THIS_FILE, "addBuddy: buddyUri="+buddyUri);
+
         if (!created) {
             return -1;
         }

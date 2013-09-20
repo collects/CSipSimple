@@ -46,7 +46,7 @@ public class DBAdapter {
 
 	public static class DatabaseHelper extends SQLiteOpenHelper {
 		
-		private static final int DATABASE_VERSION = 40;
+		private static final int DATABASE_VERSION = 41;
 
 		// Creation sql command
 		private static final String TABLE_ACCOUNT_CREATE = "CREATE TABLE IF NOT EXISTS "
@@ -127,6 +127,15 @@ public class DBAdapter {
                 + SipProfile.FIELD_WIZARD_DATA                       + " TEXT"
 				
 			+ ");";
+
+		private static final String TABLE_BUDDY_CREATE = "CREATE TABLE IF NOT EXISTS "
+		    + SipProfile.BUDDIES_TABLE_NAME
+		    + "("
+		    + "_id" /*SipProfile.FIELD_ID*/			+ " INTEGER PRIMARY KEY AUTOINCREMENT,"
+		    + SipProfile.FIELD_CONTACT				+ " TEXT NOT NULL,"
+		    + SipProfile.FIELD_DISPLAY_NAME			+ " TEXT,"
+		    + SipProfile.FIELD_SUBSCRIBE			+ " BOOLEAN"
+		    + ");";
 		
 		private final static String TABLE_CALLLOGS_CREATE = "CREATE TABLE IF NOT EXISTS "
 			+ SipManager.CALLLOGS_TABLE_NAME
@@ -183,6 +192,7 @@ public class DBAdapter {
 		@Override
 		public void onCreate(SQLiteDatabase db) {
 			db.execSQL(TABLE_ACCOUNT_CREATE);
+			db.execSQL(TABLE_BUDDY_CREATE);
 			db.execSQL(TABLE_CALLLOGS_CREATE);
 			db.execSQL(TABLE_FILTERS_CREATE);
 			db.execSQL(TABLE_MESSAGES_CREATE);
@@ -446,6 +456,9 @@ public class DBAdapter {
                     Log.e(THIS_FILE, "Upgrade fail... maybe a crappy rom...", e);
                 }
             }
+	    if (oldVersion < 41) {
+		// ...
+	    }
 			onCreate(db);
 		}
 	}

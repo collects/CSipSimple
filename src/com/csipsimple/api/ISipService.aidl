@@ -1,4 +1,4 @@
-/**
+/** -*- idl -*-
  * Copyright (C) 2010-2012 Regis Montoya (aka r3gis - www.r3gis.fr)
  * This file is part of CSipSimple.
  *
@@ -76,6 +76,9 @@ interface ISipService{
 	* @return the Profile state
 	*/ 
 	SipProfileState getSipProfileState(int accountId);
+
+        void addAllBuddies();
+        void removeAllBuddies();
 	
 	//Call configuration control
 	/**

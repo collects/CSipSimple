@@ -53,58 +53,60 @@ import java.net.URL;
 
 public class NightlyUpdater {
 
-	private static final String THIS_FILE = "NightlyUpdater";
+    private static final String THIS_FILE = "NightlyUpdater";
 	
-	public static final String LAST_NIGHTLY_CHECK = "nightly_check_date";
-	public static final String IGNORE_NIGHTLY_CHECK = "nightly_check_ignore";
-	private static final String DOWNLOADED_VERSION = "dl_version";
+    public static final String LAST_NIGHTLY_CHECK = "nightly_check_date";
+    public static final String IGNORE_NIGHTLY_CHECK = "nightly_check_ignore";
+    private static final String DOWNLOADED_VERSION = "dl_version";
 
-	private Context context;
-	private SharedPreferences prefs;
-	private PackageInfo pinfo;
+    private final static boolean DISABLE_NIGHTLY_UPDATE = true;
+
+    private Context context;
+    private SharedPreferences prefs;
+    private PackageInfo pinfo;
     private String channel;
 
-	public NightlyUpdater(Context ctxt) {
-		prefs = PreferenceManager.getDefaultSharedPreferences(ctxt);
-		context = ctxt;
-		pinfo = PreferencesProviderWrapper.getCurrentPackageInfos(context);
+    public NightlyUpdater(Context ctxt) {
+	prefs = PreferenceManager.getDefaultSharedPreferences(ctxt);
+	context = ctxt;
+	pinfo = PreferencesProviderWrapper.getCurrentPackageInfos(context);
         channel = getChannelFolder(context);
-	}
+    }
 	
-	private final static String BASE_UPDATE_VERSION = CustomDistribution.getNightlyUpdaterURL();
+    private final static String BASE_UPDATE_VERSION = CustomDistribution.getNightlyUpdaterURL();
 	
-	private final static String META_TYPE = "app_type";
-	private final static String META_CHANNEL = "app_channel";
+    private final static String META_TYPE = "app_type";
+    private final static String META_CHANNEL = "app_channel";
 	
-	private final static String NIGHTLY_TYPE = "nightly";
-	//private final static String RELEASE_TYPE = "release";
+    private final static String NIGHTLY_TYPE = "nightly";
+    //private final static String RELEASE_TYPE = "release";
 	
 	
-	private static Bundle getApplicationMetaData(Context ctxt) throws NameNotFoundException {
-	    ApplicationInfo apInfo = ctxt.getPackageManager().getApplicationInfo(ctxt.getPackageName(), PackageManager.GET_META_DATA);
-	    return apInfo.metaData;
-	}
+    private static Bundle getApplicationMetaData(Context ctxt) throws NameNotFoundException {
+	ApplicationInfo apInfo = ctxt.getPackageManager().getApplicationInfo(ctxt.getPackageName(), PackageManager.GET_META_DATA);
+	return apInfo.metaData;
+    }
 	
-	public static boolean isNightlyBuild(Context ctxt) {
-	    try {
-	        Bundle metaData = getApplicationMetaData(ctxt);
-	        if(metaData != null) {
+    public static boolean isNightlyBuild(Context ctxt) {
+	try {
+	    Bundle metaData = getApplicationMetaData(ctxt);
+	    if(metaData != null) {
                 String appType = metaData.getString(META_TYPE);
-        	    if(!TextUtils.isEmpty(appType)) {
-        	    		if (!TextUtils.isEmpty(BASE_UPDATE_VERSION)) {
-        	    			if (NIGHTLY_TYPE.equalsIgnoreCase(appType)) {
-        	    					return true;
-        	    			}
-        	    		}
-        	    }
-	        }
-	    } catch (NameNotFoundException e) {
+		if(!TextUtils.isEmpty(appType)) {
+		    if (!TextUtils.isEmpty(BASE_UPDATE_VERSION)) {
+			if (NIGHTLY_TYPE.equalsIgnoreCase(appType)) {
+			    return true;
+			}
+		    }
+		}
+	    }
+	} catch (NameNotFoundException e) {
             Log.e(THIS_FILE, "Not able to get self app info", e);
         }
-	    return false;
-	}
+	return false;
+    }
 	
-	public static String getChannelFolder(Context ctxt) {
+    public static String getChannelFolder(Context ctxt) {
         try {
             Bundle metaData = getApplicationMetaData(ctxt);
             if(metaData != null) {
@@ -117,136 +119,139 @@ public class NightlyUpdater {
             Log.e(THIS_FILE, "Not able to get self app info", e);
         }
         return "trunk";
+    }
+	
+	
+    private int getLastOnlineVersion() {
+	if (DISABLE_NIGHTLY_UPDATE) {
+	    return 0;
 	}
-	
-	
-	private int getLastOnlineVersion() {
-		try {
-			URL url = new URL(BASE_UPDATE_VERSION + channel + "/CSipSimple-latest-" + channel + ".version");
-			Log.d(THIS_FILE, "Url : "+url);
-			InputStream content = (InputStream) url.getContent();
-			if(content != null) {
-				BufferedReader r = new BufferedReader(new InputStreamReader(content));
-				String versionString = r.readLine();
-				return Integer.parseInt(versionString);
-			}
-		} catch (MalformedURLException e) {
-			Log.e(THIS_FILE, "Invalid nightly build url", e);
-		} catch (IOException e) {
-			Log.e(THIS_FILE, "Can't get nightly latest value", e);
-		} catch (NumberFormatException e) {
-			Log.e(THIS_FILE, "Invalid number format", e);
-		}
-		return 0;
+	try {
+	    URL url = new URL(BASE_UPDATE_VERSION + channel + "/CSipSimple-latest-" + channel + ".version");
+	    Log.d(THIS_FILE, "Url : "+url);
+	    InputStream content = (InputStream) url.getContent();
+	    if(content != null) {
+		BufferedReader r = new BufferedReader(new InputStreamReader(content));
+		String versionString = r.readLine();
+		return Integer.parseInt(versionString);
+	    }
+	} catch (MalformedURLException e) {
+	    Log.e(THIS_FILE, "Invalid nightly build url", e);
+	} catch (IOException e) {
+	    Log.e(THIS_FILE, "Can't get nightly latest value", e);
+	} catch (NumberFormatException e) {
+	    Log.e(THIS_FILE, "Invalid number format", e);
 	}
+	return 0;
+    }
 	
-	public boolean ignoreCheckByUser() {
-		return prefs.getBoolean(IGNORE_NIGHTLY_CHECK, false);
+    public boolean ignoreCheckByUser() {
+	return prefs.getBoolean(IGNORE_NIGHTLY_CHECK, false);
+    }
+	
+    public long lastCheck() {
+	return prefs.getLong(LAST_NIGHTLY_CHECK, (long) 0);
+    }
+	
+    public UpdaterPopupLauncher getUpdaterPopup(boolean fallbackAlert) {
+	UpdaterPopupLauncher popLauncher = null;
+	Editor edt = prefs.edit();
+	int onlineVersion = getLastOnlineVersion();
+	// Reset ignore check value
+	edt.putBoolean(IGNORE_NIGHTLY_CHECK, false);
+	if(pinfo != null && pinfo.versionCode < onlineVersion) {
+	    popLauncher = new UpdaterPopupLauncher(context, onlineVersion);
+	}else {
+	    // Set last check to now :)
+	    edt.putLong(LAST_NIGHTLY_CHECK, System.currentTimeMillis());
+	    // And delete latest nightly from cache
+	    File cachedFile = getCachedFile();
+	    if(cachedFile.exists()) {
+		cachedFile.delete();
+	    }
+	    if(fallbackAlert) {
+		popLauncher = new UpdaterPopupLauncher(context, 0);
+	    }
 	}
-	
-	public long lastCheck() {
-		return prefs.getLong(LAST_NIGHTLY_CHECK, (long) 0);
-	}
-	
-	public UpdaterPopupLauncher getUpdaterPopup(boolean fallbackAlert) {
-		UpdaterPopupLauncher popLauncher = null;
-		Editor edt = prefs.edit();
-		int onlineVersion = getLastOnlineVersion();
-		// Reset ignore check value
-		edt.putBoolean(IGNORE_NIGHTLY_CHECK, false);
-		if(pinfo != null && pinfo.versionCode < onlineVersion) {
-			popLauncher = new UpdaterPopupLauncher(context, onlineVersion);
-		}else {
-			// Set last check to now :)
-			edt.putLong(LAST_NIGHTLY_CHECK, System.currentTimeMillis());
-			// And delete latest nightly from cache
-			File cachedFile = getCachedFile();
-			if(cachedFile.exists()) {
-				cachedFile.delete();
-			}
-			if(fallbackAlert) {
-				popLauncher = new UpdaterPopupLauncher(context, 0);
-			}
-		}
-		edt.commit();
+	edt.commit();
 		
-		return popLauncher;
-	}
+	return popLauncher;
+    }
 	
-	private File getCachedFile() {
-		return new File(context.getCacheDir(), "CSipSimple-latest-trunk.apk");
-	}
+    private File getCachedFile() {
+	return new File(context.getCacheDir(), "CSipSimple-latest-trunk.apk");
+    }
 	
-	public class UpdaterPopupLauncher implements Runnable {
+    public class UpdaterPopupLauncher implements Runnable {
 		
-		private Context context;
-		private int version = 0;
+	private Context context;
+	private int version = 0;
 		
-		public UpdaterPopupLauncher(Context ctxt, int onlineVersion) {
-			context = ctxt;
-			version = onlineVersion;
-		}
+	public UpdaterPopupLauncher(Context ctxt, int onlineVersion) {
+	    context = ctxt;
+	    version = onlineVersion;
+	}
 		
-		@Override
-		public void run() {
-			Builder ab = new AlertDialog.Builder(context);
+	@Override
+	    public void run() {
+	    Builder ab = new AlertDialog.Builder(context);
 			
 			
-			ab.setIcon(R.drawable.ic_launcher_nightly)
-				.setTitle("Update nightly build");
+	    ab.setIcon(R.drawable.ic_launcher_nightly)
+		.setTitle("Update nightly build");
 			
-			if(version > 0) {
-				ab.setMessage("Revision " + version + " available. Upgrade now?")
-					.setPositiveButton(R.string.ok, new OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
+	    if(version > 0) {
+		ab.setMessage("Revision " + version + " available. Upgrade now?")
+		    .setPositiveButton(R.string.ok, new OnClickListener() {
+			    @Override
+				public void onClick(DialogInterface dialog, int which) {
 							
-							Intent it = new Intent();
-							it.setData(Uri.parse(BASE_UPDATE_VERSION + channel + "/CSipSimple-r"+version+"-" + channel + ".apk"));
-							it.setClass(context, Downloader.class);
-							it.putExtra(Downloader.EXTRA_ICON, R.drawable.ic_launcher_nightly);
-							it.putExtra(Downloader.EXTRA_TITLE, "CSipSimple nightly build");
-							it.putExtra(Downloader.EXTRA_CHECK_MD5, true);
-							it.putExtra(Downloader.EXTRA_OUTPATH, getCachedFile().getAbsolutePath());
+				Intent it = new Intent();
+				it.setData(Uri.parse(BASE_UPDATE_VERSION + channel + "/CSipSimple-r"+version+"-" + channel + ".apk"));
+				it.setClass(context, Downloader.class);
+				it.putExtra(Downloader.EXTRA_ICON, R.drawable.ic_launcher_nightly);
+				it.putExtra(Downloader.EXTRA_TITLE, "CSipSimple nightly build");
+				it.putExtra(Downloader.EXTRA_CHECK_MD5, true);
+				it.putExtra(Downloader.EXTRA_OUTPATH, getCachedFile().getAbsolutePath());
 							
-							Intent resultIntent = new Intent(context, DeviceStateReceiver.class);
-							resultIntent.setAction(DeviceStateReceiver.APPLY_NIGHTLY_UPLOAD);
-							resultIntent.putExtra(DOWNLOADED_VERSION, version);
-							PendingIntent pi = PendingIntent.getBroadcast(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-							it.putExtra(Downloader.EXTRA_PENDING_FINISH_INTENT, pi);
-							context.startService(it);
-						}
-					})
-					.setNegativeButton(R.string.cancel, new OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							Editor edt = prefs.edit();
-							edt.putBoolean(IGNORE_NIGHTLY_CHECK, true);
-							edt.commit();
-							dialog.dismiss();
-						}
-					});
-			}else {
-				ab.setMessage("No update available")
-					.setPositiveButton(R.string.ok, new OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.dismiss();
-						}
-					});
-			}
+				Intent resultIntent = new Intent(context, DeviceStateReceiver.class);
+				resultIntent.setAction(DeviceStateReceiver.APPLY_NIGHTLY_UPLOAD);
+				resultIntent.putExtra(DOWNLOADED_VERSION, version);
+				PendingIntent pi = PendingIntent.getBroadcast(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+				it.putExtra(Downloader.EXTRA_PENDING_FINISH_INTENT, pi);
+				context.startService(it);
+			    }
+			})
+		    .setNegativeButton(R.string.cancel, new OnClickListener() {
+			    @Override
+				public void onClick(DialogInterface dialog, int which) {
+				Editor edt = prefs.edit();
+				edt.putBoolean(IGNORE_NIGHTLY_CHECK, true);
+				edt.commit();
+				dialog.dismiss();
+			    }
+			});
+	    }else {
+		ab.setMessage("No update available")
+		    .setPositiveButton(R.string.ok, new OnClickListener() {
+			    @Override
+				public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+			    }
+			});
+	    }
 
-			ab.create().show();
+	    ab.create().show();
 			
-		}
 	}
+    }
 
-	public void applyUpdate(Intent i) {
-		File f = getCachedFile();
+    public void applyUpdate(Intent i) {
+	File f = getCachedFile();
 		
-		Intent intent = new Intent(Intent.ACTION_VIEW);
+	Intent intent = new Intent(Intent.ACTION_VIEW);
     	intent.setDataAndType(Uri.fromFile(f.getAbsoluteFile()), "application/vnd.android.package-archive");
     	intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     	context.startActivity(intent);
-	}
+    }
 }

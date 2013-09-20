@@ -46,7 +46,6 @@ public abstract class CSSListFragment extends SherlockListFragment implements Lo
 
     // Override set list shown
     
-
     private View mListContainer = null;
     private View mProgressContainer = null;
     private boolean mListShown = false;

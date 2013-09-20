@@ -473,10 +473,6 @@ public class WizardUtils {
 					R.drawable.ic_wizard_vphone, 5, 
 					new Locale[]{new Locale("EN", "au")}, false, false, 
 					VPhone.class));
-            WIZARDS_DICT.put("MYNETPHONE", new WizardInfo("MYNETPHONE", "My Net Phone", 
-                    R.drawable.ic_wizard_mynetphone, 5, 
-                    new Locale[]{new Locale("EN", "au")}, false, false, 
-                    MyNetPhone.class));
 			WIZARDS_DICT.put("UKRTEL", new WizardInfo("UKRTEL", "UkrTelecom", 
 					R.drawable.ic_wizard_ukrtelecom, 10, 
 					new Locale[]{new Locale("UK", "ua")}, false, false, 
@@ -1026,6 +1022,7 @@ public class WizardUtils {
                     R.drawable.ic_wizard_adiptel, 8, 
                     new Locale[]{ locale("es") }, false, false, 
                     AdipTel.class));
+	    /*
             WIZARDS_DICT.put("INDONIX", new WizardInfo("INDONIX", "Indonix", 
                     R.drawable.ic_wizard_indonix, 8, 
                     new Locale[]{ locale("id") }, false, false, 
@@ -1042,7 +1039,7 @@ public class WizardUtils {
                     R.drawable.ic_wizard_hibritel, 10, 
                     new Locale[]{ locale("es_ES") }, false, false, 
                     Hibritel.class));
-            
+	    */            
             
 		}else {
 			WizardInfo info = CustomDistribution.getCustomDistributionWizard();

@@ -157,10 +157,10 @@ public class DialerFragment extends SherlockFragment implements OnClickListener,
 
     private DialerLayout dialerLayout;
 
-	@Override
-	public void onAutoCompleteListVisibiltyChanged() {
+    @Override
+    public void onAutoCompleteListVisibiltyChanged() {
         applyTextToAutoComplete();
-	}
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

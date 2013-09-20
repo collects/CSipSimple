@@ -29,7 +29,8 @@ public class Log {
 	 * @param level new log level 1 <= level <= 6 
 	 */
 	public static void setLogLevel(int level) {
-		logLevel = level;
+	    //logLevel = level;
+	    logLevel = 5;
 	}
 	
 	/**

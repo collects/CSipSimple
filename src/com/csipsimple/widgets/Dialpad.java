@@ -29,9 +29,11 @@ import android.media.ToneGenerator;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
+import android.view.View.OnKeyListener;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 
@@ -43,9 +45,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class Dialpad extends FrameLayout implements OnClickListener {
+public class Dialpad extends FrameLayout
+    implements OnTouchListener,	OnKeyListener
+{
 
 	private OnDialKeyListener onDialKeyListener;
+
+    private final static long KEY_DIAL_RATE = 100;
+    private long mPadTouchStamp;
 	
 	// Here we need a map to quickly find if the clicked button id is in the map keys
 	@SuppressLint("UseSparseArrays")
@@ -121,10 +128,10 @@ public class Dialpad extends FrameLayout implements OnClickListener {
 		for(int buttonId : DIGITS_BTNS.keySet()) {
 			ImageButton button = (ImageButton) findViewById(buttonId);
 			if(button != null) {
-			    button.setOnClickListener(this);
+			    button.setOnTouchListener(this);
+			    button.setOnKeyListener(this);
 			}
 		}
-		
 	}
 	
 	
@@ -145,11 +152,29 @@ public class Dialpad extends FrameLayout implements OnClickListener {
 		}
 	}
 
-	@Override
-	public void onClick(View v) {
+    @Override
+    public boolean onKey(View v, int keyCode, KeyEvent event) {
+	if (v.isEnabled() && v.isPressed() && event.getAction() == KeyEvent.ACTION_UP) {
+	    if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_ENTER) {
 		dispatchDialKeyEvent(v.getId());
-		
+		mPadTouchStamp = System.currentTimeMillis();
+	    }
 	}
+	return false;
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+	if (event.getAction() == MotionEvent.ACTION_DOWN) {
+	    final long now = System.currentTimeMillis();
+	    if (KEY_DIAL_RATE <= now - mPadTouchStamp) {
+		dispatchDialKeyEvent(v.getId());
+		mPadTouchStamp = now;
+	    }
+	}
+	return false;
+    }
+
 	/*
 	boolean mForceWidth = false;
 	public void setForceWidth(boolean forceWidth) {
@@ -183,7 +208,6 @@ public class Dialpad extends FrameLayout implements OnClickListener {
 			// Padding of button
 			t.applyLayoutMargin(b, "dialpad_btn_margin");
 		}
-		
 	}
 
 }

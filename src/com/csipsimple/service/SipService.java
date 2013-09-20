@@ -217,6 +217,16 @@ public class SipService extends Service {
 			return SipService.this.getSipProfileState(accountId);
 		}
 
+		@Override
+		public void removeAllBuddies() throws RemoteException {
+		    SipService.this.enforceCallingOrSelfPermission(SipManager.PERMISSION_USE_SIP, null);
+		}
+
+		@Override
+		public void addAllBuddies() throws RemoteException {
+		    SipService.this.enforceCallingOrSelfPermission(SipManager.PERMISSION_USE_SIP, null);
+		}
+
         /**
          * {@inheritDoc}
          */
@@ -892,6 +902,7 @@ public class SipService extends Service {
 	private static HandlerThread executorThread;
 	
 	private AccountStatusContentObserver statusObserver = null;
+
     public PresenceManager presenceMgr;
     private BroadcastReceiver serviceReceiver;
 	
@@ -979,7 +990,8 @@ public class SipService extends Service {
 		Log.d(THIS_FILE, "Service has been setup ? "+ hasSetup);
 		
 		presenceMgr = new PresenceManager();
-        registerServiceBroadcasts();
+
+		registerServiceBroadcasts();
 		
 		if(!hasSetup) {
 			Log.e(THIS_FILE, "RESET SETTINGS !!!!");
@@ -1268,7 +1280,7 @@ public class SipService extends Service {
 		Log.d(THIS_FILE, "Ask pjservice to start itself");
 		
 
-        presenceMgr.startMonitoring(this);
+		presenceMgr.startMonitoring(this);
 		if(pjService.sipStart()) {
 		    // This should be done after in acquire resource
 		    // But due to http://code.google.com/p/android/issues/detail?id=21635
@@ -1524,12 +1536,26 @@ public class SipService extends Service {
 
 
     /**
+     * Get the buddy list of an account
+     * @param accountId the id of the account
+     */
+    public int getBuddies(/*long accountId*/) throws SameThreadException {
+	Log.d(THIS_FILE, "getBuddies: "+pjService);
+        int retVal = -1;
+        if(pjService != null) {
+            //Log.d(THIS_FILE, "Trying to add buddy " + buddyUri);
+            retVal = pjService.getBuddies();
+        }
+        return retVal;
+    }
+
+    /**
      * Add a buddy to list 
      * @param buddyUri the sip uri of the buddy to add
      */
     public int addBuddy(String buddyUri) throws SameThreadException {
         int retVal = -1;
-        if(pjService != null) {
+        if (pjService != null) {
             Log.d(THIS_FILE, "Trying to add buddy " + buddyUri);
             retVal = pjService.addBuddy(buddyUri);
         }

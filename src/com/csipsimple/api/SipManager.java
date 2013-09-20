@@ -163,6 +163,10 @@ public final class SipManager {
      */
     public static final String ACTION_SIP_ACCOUNT_CHANGED = "com.csipsimple.service.ACCOUNT_CHANGED";
     /**
+     * Broadcast sent when sip buddy has been changed.
+     */
+    public static final String ACTION_SIP_BUDDY_CHANGED = "com.csipsimple.service.BUDDY_CHANGED";
+    /**
      * Broadcast sent when sip account registration has changed.
      * <p>
      * Provided extras :

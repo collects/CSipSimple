@@ -59,6 +59,7 @@ import com.csipsimple.api.SipConfigManager;
 import com.csipsimple.api.SipManager;
 import com.csipsimple.api.SipProfile;
 import com.csipsimple.ui.account.AccountsEditList;
+import com.csipsimple.ui.busylamp.BusyLampFragment;
 import com.csipsimple.ui.calllog.CallLogListFragment;
 import com.csipsimple.ui.dialpad.DialerFragment;
 import com.csipsimple.ui.favorites.FavListFragment;
@@ -93,11 +94,12 @@ public class SipHome extends SherlockFragmentActivity implements OnWarningChange
 
     private static final String THIS_FILE = "SIP_HOME";
 
-    private final static int TAB_ID_DIALER = 0;
-    private final static int TAB_ID_CALL_LOG = 1;
-    private final static int TAB_ID_FAVORITES = 2;
-    private final static int TAB_ID_MESSAGES = 3;
-    private final static int TAB_ID_WARNING = 4;
+    private final static int TAB_ID_BUSYLAMP = 0;
+    private final static int TAB_ID_DIALER = 1;
+    private final static int TAB_ID_CALL_LOG = 2;
+    private final static int TAB_ID_FAVORITES = 3;
+    private final static int TAB_ID_MESSAGES = 4;
+    private final static int TAB_ID_WARNING = 5;
 
     // protected static final int PICKUP_PHONE = 0;
     private static final int REQUEST_EDIT_DISTRIBUTION_ACCOUNT = 0;
@@ -143,12 +145,15 @@ public class SipHome extends SherlockFragmentActivity implements OnWarningChange
 
         
 
+	Tab busylampTab = ab.newTab()
+	    .setContentDescription(R.string.busylamp_tab_name_text)
+	    .setIcon(R.drawable.ic_ab_busylamp_holo_dark);
         Tab dialerTab = ab.newTab()
-                 .setContentDescription(R.string.dial_tab_name_text)
-                .setIcon(R.drawable.ic_ab_dialer_holo_dark);
+	    .setContentDescription(R.string.dial_tab_name_text)
+	    .setIcon(R.drawable.ic_ab_dialer_holo_dark);
         Tab callLogTab = ab.newTab()
-                 .setContentDescription(R.string.calllog_tab_name_text)
-                .setIcon(R.drawable.ic_ab_history_holo_dark);
+	    .setContentDescription(R.string.calllog_tab_name_text)
+	    .setIcon(R.drawable.ic_ab_history_holo_dark);
         Tab favoritesTab = null;
         if(CustomDistribution.supportFavorites()) {
             favoritesTab = ab.newTab()
@@ -172,6 +177,7 @@ public class SipHome extends SherlockFragmentActivity implements OnWarningChange
 
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mTabsAdapter = new TabsAdapter(this, getSupportActionBar(), mViewPager);
+        mTabsAdapter.addTab(busylampTab, BusyLampFragment.class, TAB_ID_BUSYLAMP);
         mTabsAdapter.addTab(dialerTab, DialerFragment.class, TAB_ID_DIALER);
         mTabsAdapter.addTab(callLogTab, CallLogListFragment.class, TAB_ID_CALL_LOG);
         if(favoritesTab != null) {

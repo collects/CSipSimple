@@ -165,7 +165,7 @@ public class EditFilter extends Activity implements OnItemSelectedListener, Text
 				currentCursor.close();
 			}
 			getContentResolver().insert(SipManager.FILTER_URI, filter.getDbContentValues());
-		}else {
+		} else {
 			getContentResolver().update(ContentUris.withAppendedId(SipManager.FILTER_ID_URI_BASE, filterId), filter.getDbContentValues(), null, null);
 		}
 	}

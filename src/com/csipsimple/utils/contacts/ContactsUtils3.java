@@ -370,12 +370,10 @@ public class ContactsUtils3 extends ContactsWrapper {
     @Override
     public void updateCSipPresence(Context ctxt, String buddyUri, SipManager.PresenceStatus presStatus, String statusText) {
         // TODO Auto-generated method stub
-        
     }
 
     @Override
     public Intent getAddContactIntent(String displayName, String csipUri) {
-
         Intent intent = new Intent(Intents.Insert.ACTION);
 
         if(!TextUtils.isEmpty(displayName)) {
@@ -400,7 +398,6 @@ public class ContactsUtils3 extends ContactsWrapper {
                 Groups._ID,
                 Groups.NAME + " AS '"+FIELD_GROUP_NAME+"'"
         };
-        
         return context.getContentResolver().query(searchUri, projection, null, null,
                 Groups.NAME + " ASC");
     }

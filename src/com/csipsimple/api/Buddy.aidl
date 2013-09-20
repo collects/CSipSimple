@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2010-2012 Regis Montoya (aka r3gis - www.r3gis.fr)
+ * Copyright (C) 2013 Duzy Chan <code@duzy.info>
  * This file is part of CSipSimple.
  *
  *  CSipSimple is free software: you can redistribute it and/or modify
@@ -17,22 +17,8 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with CSipSimple.  If not, see <http://www.gnu.org/licenses/>.
+ *  
+ *  This file and this file only is also released under Apache license as an API file
  */
-
-package com.csipsimple.wizards.impl;
-
-
-public class MyNetPhone extends SimpleImplementation {
-
-	@Override
-	protected String getDomain() {
-		return "mobilesip.mynetfone.com.au";
-	}
-
-	@Override
-	protected String getDefaultName() {
-		return "My Net Phone";
-	}
-	
-	
-}
+package com.csipsimple.api;
+parcelable Buddy;
