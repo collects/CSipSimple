@@ -132,9 +132,11 @@ public class DBAdapter {
 		    + SipProfile.BUDDIES_TABLE_NAME
 		    + "("
 		    + "_id" /*SipProfile.FIELD_ID*/			+ " INTEGER PRIMARY KEY AUTOINCREMENT,"
+		    + SipProfile.FIELD_ACC_ID				+ " INTEGER,"
 		    + SipProfile.FIELD_CONTACT				+ " TEXT NOT NULL,"
 		    + SipProfile.FIELD_DISPLAY_NAME			+ " TEXT,"
-		    + SipProfile.FIELD_SUBSCRIBE			+ " BOOLEAN"
+		    + SipProfile.FIELD_SUBSCRIBE			+ " BOOLEAN,"
+		    + SipProfile.FIELD_STATUS				+ " INTEGER"
 		    + ");";
 		
 		private final static String TABLE_CALLLOGS_CREATE = "CREATE TABLE IF NOT EXISTS "

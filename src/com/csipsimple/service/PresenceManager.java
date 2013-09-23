@@ -21,8 +21,10 @@
 
 package com.csipsimple.service;
 
+import android.content.ContentValues;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.os.Handler;
 
 import com.csipsimple.api.SipManager;
@@ -46,7 +48,15 @@ public class PresenceManager
             SipProfile.FIELD_DISPLAY_NAME,
             SipProfile.FIELD_WIZARD
     };
-    
+
+    private static final String[] BUD_PROJECTION = new String[] {
+	"_id",
+	SipProfile.FIELD_CONTACT,
+	//SipProfile.FIELD_ACC_ID,
+	//SipProfile.FIELD_DISPLAY_NAME,
+	//SipProfile.FIELD_SUBSCRIBE,
+	//SipProfile.FIELD_STATUS,
+    };
 
     private SipService service;
 
@@ -54,14 +64,18 @@ public class PresenceManager
     private ArrayList<SipProfile> addedAccounts = new ArrayList<SipProfile>();
 
     private AccountStatusContentObserver statusObserver;
+    private BuddyStatusContentObserver buddyStatusObserver;
 
     public synchronized void startMonitoring(SipService srv) {
         service = srv;
-        if(statusObserver == null) {
+        if (statusObserver == null) {
             statusObserver = new AccountStatusContentObserver(mHandler);
-            service.getContentResolver().registerContentObserver(SipProfile.ACCOUNT_STATUS_URI,
-                    true, statusObserver);
+            service.getContentResolver().registerContentObserver(SipProfile.ACCOUNT_STATUS_URI, true, statusObserver);
         }
+	if (buddyStatusObserver == null) {
+	    buddyStatusObserver = new BuddyStatusContentObserver(mHandler);
+            service.getContentResolver().registerContentObserver(SipProfile.BUDDY_URI, true, buddyStatusObserver);
+	}
     }
 
     public synchronized void stopMonitoring() {
@@ -69,6 +83,10 @@ public class PresenceManager
             service.getContentResolver().unregisterContentObserver(statusObserver);
             statusObserver = null;
         }
+	if (buddyStatusObserver != null) {
+            service.getContentResolver().unregisterContentObserver(buddyStatusObserver);
+	    buddyStatusObserver = null;
+	}
         service = null;
     }
     
@@ -93,6 +111,12 @@ public class PresenceManager
     private synchronized void addBuddiesForAccount(SipProfile acc) {
         // Get buddies uris for this account
         final List<String> toAdd = getBuddiesForAccount(acc);
+	final Cursor c = service.getContentResolver().query(SipProfile.BUDDY_URI, BUD_PROJECTION, null, null, null);
+	while (c.moveToNext()) {
+	    final ContentValues v = new ContentValues();
+	    DatabaseUtils.cursorRowToContentValues(c, v);
+	    toAdd.add(v.getAsString(SipProfile.FIELD_CONTACT));
+	}
 
         if (toAdd.size() > 0 && service != null) {
             service.getExecutor().execute(new SipRunnable() {
@@ -216,6 +240,13 @@ public class PresenceManager
             super(h);
         }
 
+        public void onChange(boolean selfChange) {
+            updateRegistrations();
+        }
+    }
+
+    class BuddyStatusContentObserver extends ContentObserver {
+        public BuddyStatusContentObserver(Handler h) { super(h); }
         public void onChange(boolean selfChange) {
             updateRegistrations();
         }

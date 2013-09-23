@@ -9,3 +9,4 @@
 /ActionBarSherlock
 .pc
 .patched_sources
+/src/org/pjsip

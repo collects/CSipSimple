@@ -252,6 +252,10 @@ public class SipProfile implements Parcelable {
      */
     public static final String FIELD_SUBSCRIBE = "subscribe";
     /**
+     * The account/buddy status.
+     */
+    public static final String FIELD_STATUS = "status";
+    /**
      * The priority of the account.<br/>
      * This is used in the interface when presenting list of accounts.<br/>
      * This can also be used to choose the default account. <br/>

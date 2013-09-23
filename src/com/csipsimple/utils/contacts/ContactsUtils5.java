@@ -641,7 +641,6 @@ public class ContactsUtils5 extends ContactsWrapper {
 
     @Override
     public List<String> getCSipPhonesByGroup(Context ctxt, String groupName) {
-
         Cursor contacts = getContactsByGroup(ctxt, groupName);
         ArrayList<String> results = new ArrayList<String>();
         if (contacts != null) {
@@ -913,7 +912,7 @@ public class ContactsUtils5 extends ContactsWrapper {
                     cv.put(CommonDataKinds.Im.CUSTOM_PROTOCOL, SipManager.PROTOCOL_CSIP);
                     cv.put(CommonDataKinds.Im.RAW_CONTACT_ID, rawContactId);
                     Uri insertedUri = cr.insert(Data.CONTENT_URI, cv);
-                    if(insertedUri == null) {
+                    if (insertedUri == null) {
                         return false;
                     }
                     Log.d(THIS_FILE, "Inserted : " + insertedUri.toString());

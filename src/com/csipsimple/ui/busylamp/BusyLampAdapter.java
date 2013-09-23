@@ -22,7 +22,9 @@
 package com.csipsimple.ui.busylamp;
 
 import android.content.Context;
+import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.support.v4.widget.ResourceCursorAdapter;
 import android.text.Html;
 import android.text.Spannable;
@@ -39,7 +41,9 @@ import android.widget.RelativeLayout.LayoutParams;
 import android.widget.TextView;
 
 import com.csipsimple.R;
+import com.csipsimple.api.SipManager;
 import com.csipsimple.api.SipMessage;
+import com.csipsimple.api.SipProfile;
 import com.csipsimple.models.CallerInfo;
 import com.csipsimple.utils.ContactsAsyncHelper;
 import com.csipsimple.utils.SmileyParser;
@@ -65,5 +69,51 @@ public class BusyLampAdapter extends ResourceCursorAdapter
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
+        ContentValues values = new ContentValues();
+        DatabaseUtils.cursorRowToContentValues(cursor, values);
+
+	final ImageView statusLight = (ImageView) view.findViewById(R.id.status_light);
+	final TextView contact = (TextView) view.findViewById(R.id.contact);
+	final TextView name = (TextView) view.findViewById(R.id.name);
+	boolean subscribe = values.getAsBoolean(SipProfile.FIELD_SUBSCRIBE);
+	int status = -1;
+	if (values.containsKey(SipProfile.FIELD_STATUS)) 
+	    values.getAsInteger(SipProfile.FIELD_STATUS);
+	name.setText(values.getAsString(SipProfile.FIELD_DISPLAY_NAME));
+	contact.setText(values.getAsString(SipProfile.FIELD_CONTACT));
+	if (SipManager.PresenceStatus.values().length < status) status = -1;
+	if (status < 0) status = 0;
+	statusLight.setTag(null);
+	switch (SipManager.PresenceStatus.values()[status]) {
+	case ONLINE:
+	    statusLight.setImageResource(android.R.drawable.presence_online);
+	    break;
+	case INCOMING:
+	    statusLight.setImageResource(android.R.drawable.presence_online);
+	    statusLight.setTag(new Boolean(false));
+	    statusLight.postDelayed(new Runnable() { public void run() {
+		Boolean vis = (Boolean) statusLight.getTag();
+		if (vis == null) {
+		    statusLight.setVisibility(View.VISIBLE);
+		    return;
+		}
+		statusLight.setVisibility(vis ? View.VISIBLE : View.GONE);
+		statusLight.setTag(new Boolean(!vis));
+		statusLight.postDelayed(this, 400);
+	    }}, 500);
+	    break;
+	case BUSY:
+	    statusLight.setImageResource(android.R.drawable.presence_busy);
+	    break;
+	case AWAY:
+	    statusLight.setImageResource(android.R.drawable.presence_away);
+	    break;
+	case INVISIBLE:
+	    statusLight.setImageResource(android.R.drawable.presence_invisible);
+	    break;
+	case OFFLINE:
+	default:
+	    statusLight.setImageResource(android.R.drawable.presence_offline);
+	}
     }
 }

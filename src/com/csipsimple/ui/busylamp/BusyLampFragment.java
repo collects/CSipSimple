@@ -125,7 +125,7 @@ public class BusyLampFragment extends SherlockListFragment
 
 	if (mAdapter == null) {
 	    mAdapter = new BusyLampAdapter(getActivity(), null);
-	    getListView().setAdapter(mAdapter);
+	    //getListView().setAdapter(mAdapter);
 	}
 
 	getLoaderManager().initLoader(0, null, this);
@@ -190,13 +190,14 @@ public class BusyLampFragment extends SherlockListFragment
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Log.d(THIS_FILE, "buddies: "+id+", "+args);
         Builder builder = SipProfile.BUDDY_URI.buildUpon(); //.appendEncodedPath(remoteFrom);
-        return new CursorLoader(getActivity(), builder.build(), null, null, null, null/*SipProfile.FIELD_DATE + " ASC"*/);
+        return new CursorLoader(getActivity(), builder.build(), null, null, null, SipProfile.FIELD_DISPLAY_NAME + " ASC");
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         Log.d(THIS_FILE, "buddies: "+data.getCount());
         mAdapter.swapCursor(data);
+	getListView().setAdapter(mAdapter);
 	mProgressContainer.setVisibility(View.GONE);
 	mListContainer.setVisibility(View.VISIBLE);
     }
@@ -273,10 +274,12 @@ public class BusyLampFragment extends SherlockListFragment
 	    confirmButtonLabel = R.string.save;
 	    confirmListener = new AlertDialog.OnClickListener() { public void onClick(DialogInterface d, int i) {
 		saveBuddy(number.getText().toString().trim(), name.getText().toString().trim(), subscribe.isChecked());
+		getLoaderManager().restartLoader(0, null, BusyLampFragment.this);
 	    }};
 	} else {
 	    confirmListener = new AlertDialog.OnClickListener() { public void onClick(DialogInterface d, int i) {
 		addNewBuddy(number.getText().toString().trim(), name.getText().toString().trim(), subscribe.isChecked());
+		getLoaderManager().restartLoader(0, null, BusyLampFragment.this);
 	    }};
 	}
 	new AlertDialog.Builder(getActivity()).setView(view)

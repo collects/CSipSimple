@@ -138,7 +138,6 @@ public class FavAdapter extends ResourceCursorAdapter implements OnClickListener
 
         showViewForType(view, type);
         
-        
         if(type == ContactsWrapper.TYPE_GROUP) {
             // Get views
             TextView tv = (TextView) view.findViewById(R.id.header_text);

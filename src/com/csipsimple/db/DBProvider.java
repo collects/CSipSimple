@@ -66,6 +66,7 @@ public class DBProvider extends ContentProvider {
     private static final int MESSAGES = 9, MESSAGES_ID = 10;
     private static final int THREADS = 11, THREADS_ID = 12;
     private static final int BUDDIES = 13, BUDDIES_ID = 14;
+    private static final int BUDDIES_STATUS = 15, BUDDIES_STATUS_ID = 16,
     
     /**
      * A UriMatcher instance
@@ -238,10 +239,10 @@ public class DBProvider extends ContentProvider {
 
     // Map active account id (id for sql settings database) with SipProfileState that contains stack id and other status infos
     private final Map<Long, ContentValues> profilesStatus = new HashMap<Long, ContentValues>();
-	
+    private final Map<Long, ContentValues> buddiesStatus = new HashMap<Long, ContentValues>();
 
     @Override
-	public String getType(Uri uri) {
+    public String getType(Uri uri) {
 	switch (URI_MATCHER.match(uri)) {
 	case ACCOUNTS:
 	    return SipProfile.ACCOUNT_CONTENT_TYPE;
@@ -433,9 +434,9 @@ public class DBProvider extends ContentProvider {
 	    break;
 	case ACCOUNTS_STATUS_ID:
 	    long id = ContentUris.parseId(uri);
-	    synchronized (profilesStatus){
+	    synchronized (profilesStatus) {
 		SipProfileState ps = new SipProfileState();
-		if(profilesStatus.containsKey(id)) {
+		if (profilesStatus.containsKey(id)) {
 		    ContentValues currentValues = profilesStatus.get(id);
 		    ps.createFromContentValue(currentValues);
 		}
@@ -446,6 +447,15 @@ public class DBProvider extends ContentProvider {
 		Log.d(THIS_FILE, "Added "+cv);
 	    }
             getContext().getContentResolver().notifyChange(uri, null);
+	    return uri;
+	case BUDDIES_STATUS_ID:
+	    {
+		long id = ContentUris.parseId(uri);
+		synchronized (buddiesStatus) {
+		    //...
+		}
+		getContext().getContentResolver().notifyChange(uri, null);
+	    }
 	    return uri;
 	default:
 	    break;
@@ -837,7 +847,7 @@ public class DBProvider extends ContentProvider {
         getContext().sendBroadcast(publishIntent, SipManager.PERMISSION_USE_SIP);
     }
 	
-    private static List<String> getPossibleFieldsForType(int type){
+    private static List<String> getPossibleFieldsForType(int type) {
         List<String> possibles = null;
         switch (type) {
 	case ACCOUNTS:

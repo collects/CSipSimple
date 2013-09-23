@@ -361,14 +361,14 @@ public final class SipManager {
      * Uri for call log content provider.
      */
     public static final Uri CALLLOG_URI = Uri.parse(ContentResolver.SCHEME_CONTENT + "://"
-            + AUTHORITY + "/"
-            + CALLLOGS_TABLE_NAME);
+						    + AUTHORITY + "/"
+						    + CALLLOGS_TABLE_NAME);
     /**
      * Base uri for a specific call log. Should be appended with id of the call log.
      */
     public static final Uri CALLLOG_ID_URI_BASE = Uri.parse(ContentResolver.SCHEME_CONTENT + "://"
-            + AUTHORITY + "/"
-            + CALLLOGS_TABLE_NAME + "/");
+							    + AUTHORITY + "/"
+							    + CALLLOGS_TABLE_NAME + "/");
     // -- Extra fields for call logs
     /**
      * The account used for this call
@@ -400,14 +400,14 @@ public final class SipManager {
      * Uri for filters provider.
      */
     public static final Uri FILTER_URI = Uri.parse(ContentResolver.SCHEME_CONTENT + "://"
-            + AUTHORITY + "/"
-            + FILTERS_TABLE_NAME);
+						   + AUTHORITY + "/"
+						   + FILTERS_TABLE_NAME);
     /**
      * Base uri for a specific filter. Should be appended with filter id.
      */
     public static final Uri FILTER_ID_URI_BASE = Uri.parse(ContentResolver.SCHEME_CONTENT + "://"
-            + AUTHORITY + "/"
-            + FILTERS_TABLE_NAME + "/");
+							   + AUTHORITY + "/"
+							   + FILTERS_TABLE_NAME + "/");
 
     // EXTRAS
     /**
@@ -473,7 +473,8 @@ public final class SipManager {
     /**
      * Possible presence status.
      */
-    public enum PresenceStatus {
+    public enum PresenceStatus
+    {
         /**
          * Unknown status
          */
@@ -494,6 +495,14 @@ public final class SipManager {
          * Away status
          */
         AWAY,
+        /**
+         * Incoming call (phone ringing)
+         */
+        INCOMING,
+        /**
+         * Invisible call
+         */
+        INVISIBLE,
     }
 
     /**

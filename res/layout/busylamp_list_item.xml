@@ -9,31 +9,60 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
+    android:minHeight="@dimen/message_contact_photo_size"
     >
 
-  <LinearLayout
-      android:id="@+id/message_block"
-      android:layout_width="fill_parent"
+  <TextView
+      android:id="@+id/name"
+      android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_alignParentTop="true"
-      android:minHeight="@dimen/message_contact_photo_size"
-      android:orientation="vertical"
-      >
+      android:layout_marginLeft="20dp"
+      android:layout_marginRight="20dp"
+      android:layout_centerVertical="true"
+      android:autoLink="all"
+      android:linksClickable="false"
+      android:textAppearance="?android:attr/textAppearanceSmall"
+      android:textColor="?android:attr/textColorPrimary"
+      android:textStyle="bold"
+      android:textSize="20sp"
+      />
 
-    <TextView
-	android:id="@+id/text_view"
-	android:layout_width="wrap_content"
-	android:layout_height="wrap_content"
-	android:autoLink="all"
-	android:linksClickable="false"
-	android:paddingLeft="@dimen/message_item_text_padding_left_right"
-	android:paddingRight="@dimen/message_item_text_padding_left_right"
-	android:paddingTop="@dimen/message_item_text_padding_top"
-	android:textAppearance="?android:attr/textAppearanceSmall"
-	android:textColor="?android:attr/textColorPrimary"
-	android:textSize="16sp"
-	/>
+  <TextView
+      android:id="@+id/contact"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_toRightOf="@id/name"
+      android:layout_alignTop="@id/name"
+      android:layout_alignBottom="@id/name"
+      android:layout_centerVertical="true"
+      android:autoLink="all"
+      android:linksClickable="false"
+      android:textAppearance="?android:attr/textAppearanceSmall"
+      android:textColor="?android:attr/textColorSecondary"
+      android:textSize="16sp"
+      />
 
-  </LinearLayout>
+  <ImageView
+      android:id="@+id/status_light"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignParentRight="true"
+      android:layout_alignTop="@id/contact"
+      android:layout_alignBottom="@id/contact"
+      android:layout_marginLeft="20dp"
+      android:layout_marginRight="20dp"
+      android:layout_centerVertical="true"
+      android:src="@android:drawable/presence_offline"
+      />
 
+  <View
+      android:layout_width="match_parent"
+      android:layout_height="1dip"
+      android:layout_alignParentLeft="true"
+      android:layout_alignParentRight="true"
+      android:layout_alignParentBottom="true"
+      android:layout_marginLeft="@dimen/call_log_outer_margin"
+      android:layout_marginRight="@dimen/call_log_outer_margin"
+      android:background="#33fefefe"
+      />
 </RelativeLayout>
