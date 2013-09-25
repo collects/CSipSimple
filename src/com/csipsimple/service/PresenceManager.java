@@ -50,7 +50,7 @@ public class PresenceManager
     };
 
     private static final String[] BUD_PROJECTION = new String[] {
-	"_id",
+	SipProfile.FIELD_URI,
 	SipProfile.FIELD_CONTACT,
 	//SipProfile.FIELD_ACC_ID,
 	//SipProfile.FIELD_DISPLAY_NAME,
@@ -74,7 +74,7 @@ public class PresenceManager
         }
 	if (buddyStatusObserver == null) {
 	    buddyStatusObserver = new BuddyStatusContentObserver(mHandler);
-            service.getContentResolver().registerContentObserver(SipProfile.BUDDY_URI, true, buddyStatusObserver);
+            service.getContentResolver().registerContentObserver(SipProfile.BUDDY_STATUS_URI, true, buddyStatusObserver);
 	}
     }
 
@@ -111,22 +111,20 @@ public class PresenceManager
     private synchronized void addBuddiesForAccount(SipProfile acc) {
         // Get buddies uris for this account
         final List<String> toAdd = getBuddiesForAccount(acc);
+	/*
 	final Cursor c = service.getContentResolver().query(SipProfile.BUDDY_URI, BUD_PROJECTION, null, null, null);
 	while (c.moveToNext()) {
 	    final ContentValues v = new ContentValues();
 	    DatabaseUtils.cursorRowToContentValues(c, v);
 	    toAdd.add(v.getAsString(SipProfile.FIELD_CONTACT));
 	}
-
+	*/
         if (toAdd.size() > 0 && service != null) {
-            service.getExecutor().execute(new SipRunnable() {
-                @Override
-                protected void doRun() throws SameThreadException {
-                    for (String csipUri : toAdd) {
-                        service.addBuddy("sip:" + csipUri);
-                    }
-                }
-            });
+            service.getExecutor().execute(new SipRunnable() { @Override protected void doRun() throws SameThreadException {
+		for (String csipUri : toAdd) {
+		    service.addBuddy("sip:" + csipUri);
+		}
+	    }});
         }
         addedAccounts.add(acc);
     }
@@ -183,9 +181,7 @@ public class PresenceManager
             return;
         }
         Cursor c = service.getContentResolver().query(SipProfile.ACCOUNT_URI, ACC_PROJECTION,
-                SipProfile.FIELD_ACTIVE + "=?", new String[] {
-                    "1"
-                }, null);
+                SipProfile.FIELD_ACTIVE + "=?", new String[] { "1" }, null);
 
         ArrayList<SipProfile> accToAdd = new ArrayList<SipProfile>();
         ArrayList<SipProfile> accToRemove = new ArrayList<SipProfile>();
@@ -222,13 +218,32 @@ public class PresenceManager
             c.close();
         }
 
-        for(SipProfile acc : accToRemove) {
+        for (SipProfile acc : accToRemove) {
             deleteBuddiesForAccount(acc);
         }
 
-        for(SipProfile acc : accToAdd) {
+        for (SipProfile acc : accToAdd) {
             addBuddiesForAccount(acc);
         }
+    }
+    private synchronized void updateBuddiesStatus() {
+        if (service == null) {
+            // Nothing to do at this point
+            return;
+        }
+
+	Log.d(THIS_FILE, "updateBuddiesStatus: ...");
+
+	final Cursor c = service.getContentResolver().query(SipProfile.BUDDY_STATUS_URI, BUD_PROJECTION, null, null, null);
+	service.getExecutor().execute(new SipRunnable() { @Override protected void doRun() throws SameThreadException {
+	    while (c.moveToNext()) {
+		final ContentValues v = new ContentValues();
+		DatabaseUtils.cursorRowToContentValues(c, v);
+		final String s = v.getAsString(SipProfile.FIELD_URI);
+		service.addBuddy("sip:" + s);
+		Log.d(THIS_FILE, "updateBuddiesStatus: add: "+s);
+	    }
+	}});
     }
 
     /**
@@ -248,7 +263,7 @@ public class PresenceManager
     class BuddyStatusContentObserver extends ContentObserver {
         public BuddyStatusContentObserver(Handler h) { super(h); }
         public void onChange(boolean selfChange) {
-            updateRegistrations();
+            updateBuddiesStatus();
         }
     }
     
@@ -263,6 +278,5 @@ public class PresenceManager
         if(service != null) {
             ContactsWrapper.getInstance().updateCSipPresence(service, buddyUri.replace("sip:", ""), presStatus, statusText);
         }
-        
     }
 }

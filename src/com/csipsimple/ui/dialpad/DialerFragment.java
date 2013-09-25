@@ -415,8 +415,6 @@ public class DialerFragment extends SherlockFragment implements OnClickListener,
         afterTextChanged(digits.getText());
     }
 
-    
-    
     private void keyPressed(int keyCode) {
         KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
         digits.onKeyDown(keyCode, event);
@@ -439,8 +437,7 @@ public class DialerFragment extends SherlockFragment implements OnClickListener,
         public void onItemClick(AdapterView<?> list, View v, int position, long id) {
             Object selectedItem = searchAdapter.getItem(position);
             if (selectedItem != null) {
-                CharSequence newValue = searchAdapter.getFilter().convertResultToString(
-                        selectedItem);
+                CharSequence newValue = searchAdapter.getFilter().convertResultToString(selectedItem);
                 setTextFieldValue(newValue);
             }
         }

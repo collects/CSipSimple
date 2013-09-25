@@ -205,14 +205,22 @@ public class SipProfile implements Parcelable {
      */
     public final static String BUDDIES_TABLE_NAME = "buddies";
 
+    public final static String BUDDIES_STATUS_TABLE_NAME = "buddies_status";
+
     /**
      * Uri for accessing buddies.
      */
     public final static Uri BUDDY_URI = Uri.parse(ContentResolver.SCHEME_CONTENT + "://"
-						  + SipManager.AUTHORITY + "/" + BUDDIES_TABLE_NAME);
+	  + SipManager.AUTHORITY + "/" + BUDDIES_TABLE_NAME);
 
     public final static Uri BUDDY_ID_URI_BASE = Uri.parse(ContentResolver.SCHEME_CONTENT + "://"
-							  + SipManager.AUTHORITY + "/" + BUDDIES_TABLE_NAME + "/");
+	  + SipManager.AUTHORITY + "/" + BUDDIES_TABLE_NAME + "/");
+
+    public final static Uri BUDDY_STATUS_URI = Uri.parse(ContentResolver.SCHEME_CONTENT + "://"
+	  + SipManager.AUTHORITY + "/" + BUDDIES_STATUS_TABLE_NAME);
+
+    public final static Uri BUDDY_STATUS_ID_URI_BASE = Uri.parse(ContentResolver.SCHEME_CONTENT + "://"
+	  + SipManager.AUTHORITY + "/" + BUDDIES_STATUS_TABLE_NAME + "/");
 
     // Fields for table accounts
     /**
@@ -243,6 +251,10 @@ public class SipProfile implements Parcelable {
      * @see String
      */
     public static final String FIELD_DISPLAY_NAME = "display_name";
+    /**
+     * The contact uri.
+     */
+    public static final String FIELD_URI = "uri";
     /**
      * The contact number.
      */

@@ -164,8 +164,7 @@ public class AccountChooserButton extends LinearLayout implements OnClickListene
         super.onAttachedToWindow();
         if(statusObserver == null) {
             statusObserver = new AccountStatusContentObserver(mHandler);
-            getContext().getContentResolver().registerContentObserver(SipProfile.ACCOUNT_STATUS_URI,
-                    true, statusObserver);
+            getContext().getContentResolver().registerContentObserver(SipProfile.ACCOUNT_STATUS_URI, true, statusObserver);
         }
         if(!isInEditMode()) {
             updateRegistration();
@@ -195,10 +194,7 @@ public class AccountChooserButton extends LinearLayout implements OnClickListene
         quickAction.setAnchor(r);
         quickAction.removeAllItems();
 
-        Cursor c = getContext().getContentResolver().query(SipProfile.ACCOUNT_URI, ACC_PROJECTION, SipProfile.FIELD_ACTIVE + "=?", new String[] {
-                "1"
-        }, null);
-
+        Cursor c = getContext().getContentResolver().query(SipProfile.ACCOUNT_URI, ACC_PROJECTION, SipProfile.FIELD_ACTIVE + "=?", new String[] {"1"}, null);
         if (c != null) {
             try {
                 if (c.moveToFirst()) {

@@ -40,6 +40,7 @@ import com.csipsimple.api.SipManager;
 import com.csipsimple.api.SipMessage;
 import com.csipsimple.api.SipProfile;
 import com.csipsimple.api.SipProfileState;
+import com.csipsimple.api.BuddyState;
 import com.csipsimple.db.DBAdapter.DatabaseHelper;
 import com.csipsimple.models.Filter;
 import com.csipsimple.utils.Log;
@@ -66,7 +67,7 @@ public class DBProvider extends ContentProvider {
     private static final int MESSAGES = 9, MESSAGES_ID = 10;
     private static final int THREADS = 11, THREADS_ID = 12;
     private static final int BUDDIES = 13, BUDDIES_ID = 14;
-    private static final int BUDDIES_STATUS = 15, BUDDIES_STATUS_ID = 16,
+    private static final int BUDDIES_STATUS = 15, BUDDIES_STATUS_ID = 16;
     
     /**
      * A UriMatcher instance
@@ -75,11 +76,12 @@ public class DBProvider extends ContentProvider {
     static {
 	// Create and initialize URI matcher.
     	URI_MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
-        
     	URI_MATCHER.addURI(SipManager.AUTHORITY, SipProfile.ACCOUNTS_TABLE_NAME, ACCOUNTS);
     	URI_MATCHER.addURI(SipManager.AUTHORITY, SipProfile.ACCOUNTS_TABLE_NAME + "/#", ACCOUNTS_ID);
     	URI_MATCHER.addURI(SipManager.AUTHORITY, SipProfile.ACCOUNTS_STATUS_TABLE_NAME, ACCOUNTS_STATUS);
     	URI_MATCHER.addURI(SipManager.AUTHORITY, SipProfile.ACCOUNTS_STATUS_TABLE_NAME + "/#", ACCOUNTS_STATUS_ID);
+	URI_MATCHER.addURI(SipManager.AUTHORITY, SipProfile.BUDDIES_STATUS_TABLE_NAME, BUDDIES_STATUS);
+	URI_MATCHER.addURI(SipManager.AUTHORITY, SipProfile.BUDDIES_STATUS_TABLE_NAME + "/#", BUDDIES_STATUS_ID);
 	URI_MATCHER.addURI(SipManager.AUTHORITY, SipProfile.BUDDIES_TABLE_NAME, BUDDIES);
 	URI_MATCHER.addURI(SipManager.AUTHORITY, SipProfile.BUDDIES_TABLE_NAME + "/#", BUDDIES_ID);
     	URI_MATCHER.addURI(SipManager.AUTHORITY, SipManager.CALLLOGS_TABLE_NAME, CALLLOGS);
@@ -293,9 +295,7 @@ public class DBProvider extends ContentProvider {
 	Integer.toString(SipMessage.MESSAGE_TYPE_SENT)
 	+") )";
 
-    @Override
-	public int delete(Uri uri, String where, String[] whereArgs) {
-
+    @Override public int delete(Uri uri, String where, String[] whereArgs) {
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         String finalWhere;
         int count = 0;
@@ -399,9 +399,7 @@ public class DBProvider extends ContentProvider {
 	return count;
     }
 
-
-    @Override
-    public Uri insert(Uri uri, ContentValues initialValues) {
+    @Override public Uri insert(Uri uri, ContentValues initialValues) {
 	int matched = URI_MATCHER.match(uri);
     	String matchedTable = null;
     	Uri baseInsertedUri = null;
@@ -433,26 +431,36 @@ public class DBProvider extends ContentProvider {
             baseInsertedUri = SipMessage.MESSAGE_ID_URI_BASE;
 	    break;
 	case ACCOUNTS_STATUS_ID:
-	    long id = ContentUris.parseId(uri);
-	    synchronized (profilesStatus) {
-		SipProfileState ps = new SipProfileState();
-		if (profilesStatus.containsKey(id)) {
-		    ContentValues currentValues = profilesStatus.get(id);
-		    ps.createFromContentValue(currentValues);
+	    {
+		long id = ContentUris.parseId(uri);
+		synchronized (profilesStatus) {
+		    SipProfileState ps = new SipProfileState();
+		    if (profilesStatus.containsKey(id)) {
+			ContentValues currentValues = profilesStatus.get(id);
+			ps.createFromContentValue(currentValues);
+		    }
+		    ps.createFromContentValue(initialValues);
+		    ContentValues cv = ps.getAsContentValue();
+		    cv.put(SipProfileState.ACCOUNT_ID, id);
+		    profilesStatus.put(id, cv);
+		    Log.d(THIS_FILE, "Added "+cv);
 		}
-		ps.createFromContentValue(initialValues);
-		ContentValues cv = ps.getAsContentValue();
-		cv.put(SipProfileState.ACCOUNT_ID, id);
-		profilesStatus.put(id, cv);
-		Log.d(THIS_FILE, "Added "+cv);
+		getContext().getContentResolver().notifyChange(uri, null);
+		return uri;
 	    }
-            getContext().getContentResolver().notifyChange(uri, null);
-	    return uri;
 	case BUDDIES_STATUS_ID:
 	    {
 		long id = ContentUris.parseId(uri);
 		synchronized (buddiesStatus) {
-		    //...
+		    final BuddyState bs = new BuddyState();
+		    if (buddiesStatus.containsKey(id)) {
+			bs.createFromValues(buddiesStatus.get(id));
+		    }
+		    bs.createFromValues(initialValues);
+		    final ContentValues cv = bs.getAsValues();
+		    cv.put(BuddyState.BUDDY_ID, id);
+		    buddiesStatus.put(id, cv);
+		    Log.d(THIS_FILE, "Added "+cv);
 		}
 		getContext().getContentResolver().notifyChange(uri, null);
 	    }
@@ -510,9 +518,7 @@ public class DBProvider extends ContentProvider {
 
 
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection,
-			    String[] selectionArgs, String sortOrder) {
-
+    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         // Constructs a new query builder and sets its table name
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         String finalSortOrder = sortOrder;
@@ -674,6 +680,31 @@ public class DBProvider extends ContentProvider {
 	    }
 	    c.setNotificationUri(getContext().getContentResolver(), uri);
 	    return c;
+	case BUDDIES_STATUS:
+	    synchronized (buddiesStatus) {
+		ContentValues[] cvs = new ContentValues[buddiesStatus.size()];
+		int i = 0;
+		for (ContentValues  ps : buddiesStatus.values()) {
+		    cvs[i] = ps;
+		    i++;
+		}
+		c = getCursor(cvs);
+	    }
+	    if(c != null) {
+		c.setNotificationUri(getContext().getContentResolver(), uri);
+	    }
+	    return c;
+	case BUDDIES_STATUS_ID:
+	    id = ContentUris.parseId(uri);
+	    synchronized (buddiesStatus) {
+		ContentValues cv = buddiesStatus.get(id);
+		if(cv == null) {
+		    return null;
+		}
+		c = getCursor(new ContentValues[] {cv});
+	    }
+	    c.setNotificationUri(getContext().getContentResolver(), uri);
+	    return c;
 	default:
 	    throw new IllegalArgumentException(UNKNOWN_URI_LOG + uri);
         }
@@ -732,21 +763,38 @@ public class DBProvider extends ContentProvider {
 	    count = db.update(SipMessage.MESSAGES_TABLE_NAME, values, where, whereArgs);
 	    break;
 	case ACCOUNTS_STATUS_ID:
-	    long id = ContentUris.parseId(uri);
-	    synchronized (profilesStatus){
-		SipProfileState ps = new SipProfileState();
-		if(profilesStatus.containsKey(id)) {
-		    ContentValues currentValues = profilesStatus.get(id);
-		    ps.createFromContentValue(currentValues);
+	    {
+		long id = ContentUris.parseId(uri);
+		synchronized (profilesStatus) {
+		    SipProfileState ps = new SipProfileState();
+		    if(profilesStatus.containsKey(id)) {
+			ContentValues currentValues = profilesStatus.get(id);
+			ps.createFromContentValue(currentValues);
+		    }
+		    ps.createFromContentValue(values);
+		    ContentValues cv = ps.getAsContentValue();
+		    cv.put(SipProfileState.ACCOUNT_ID, id);
+		    profilesStatus.put(id, cv);
+		    Log.d(THIS_FILE, "Updated "+cv);
 		}
-		ps.createFromContentValue(values);
-		ContentValues cv = ps.getAsContentValue();
-		cv.put(SipProfileState.ACCOUNT_ID, id);
-		profilesStatus.put(id, cv);
-		Log.d(THIS_FILE, "Updated "+cv);
-	    }
-	    count = 1;
-	    break;
+		count = 1;
+	    } break;
+	case BUDDIES_STATUS_ID:
+	    {
+		long id = ContentUris.parseId(uri);
+		synchronized (buddiesStatus) {
+		    final BuddyState bs = new BuddyState();
+		    if (buddiesStatus.containsKey(id)) {
+			bs.createFromValues(buddiesStatus.get(id));
+		    }
+		    bs.createFromValues(values);
+		    final ContentValues cv = bs.getAsValues();
+		    cv.put(BuddyState.BUDDY_ID, id);
+		    buddiesStatus.put(id, cv);
+		    Log.d(THIS_FILE, "Updated "+cv);
+		}
+		count = 1;
+	    } break;
 	default:
 	    throw new IllegalArgumentException(UNKNOWN_URI_LOG + uri);
         }
@@ -754,7 +802,7 @@ public class DBProvider extends ContentProvider {
         getContext().getContentResolver().notifyChange(uri, null);
 
         long rowId = -1;
-        if (matched == ACCOUNTS_ID || matched == ACCOUNTS_STATUS_ID) {
+        if (matched == ACCOUNTS_ID || matched == ACCOUNTS_STATUS_ID || matched == BUDDIES_STATUS_ID) {
             rowId = ContentUris.parseId(uri);
         }
         if (rowId >= 0) {
@@ -773,7 +821,9 @@ public class DBProvider extends ContentProvider {
                 }
             } else if (matched == ACCOUNTS_STATUS_ID) {
                 broadcastRegistrationChange(rowId);
-            }
+            } else if (matched == BUDDIES_STATUS_ID) {
+            	broadcastBuddyStateChange(rowId);
+	    }
             if (matched == BUDDIES || matched == BUDDIES_ID) {
             	broadcastBuddyChange(rowId);
             }
@@ -831,10 +881,16 @@ public class DBProvider extends ContentProvider {
     }
 
     private void broadcastBuddyChange(long buddyId) {
-	Intent publishIntent = new Intent(SipManager.ACTION_SIP_BUDDY_CHANGED);
-	publishIntent.putExtra(SipProfile.FIELD_ID, buddyId);
-	getContext().sendBroadcast(publishIntent);
+	Intent intent = new Intent(SipManager.ACTION_SIP_BUDDY_CHANGED);
+	intent.putExtra(SipProfile.FIELD_ID, buddyId);
+	getContext().sendBroadcast(intent);
 	BackupWrapper.getInstance(getContext()).dataChanged();
+    }
+
+    private void broadcastBuddyStateChange(long buddyId) {
+	Intent intent = new Intent(SipManager.ACTION_SIP_BUDDY_STATE_CHANGED);
+	intent.putExtra(SipProfile.FIELD_ID, buddyId);
+	getContext().sendBroadcast(intent);
     }
 	
     /**
@@ -876,6 +932,8 @@ public class DBProvider extends ContentProvider {
 	    break;
 	case ACCOUNTS_STATUS:
 	case ACCOUNTS_STATUS_ID:
+	case BUDDIES_STATUS:
+	case BUDDIES_STATUS_ID:
 	    possibles = new ArrayList<String>();
 	default:
         }

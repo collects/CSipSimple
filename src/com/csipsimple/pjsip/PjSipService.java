@@ -916,8 +916,7 @@ public class PjSipService {
                     // status codes
                     cv.put(SipProfileState.STATUS_CODE, pjAccountInfo.getStatus().swigValue());
                 } catch (IllegalArgumentException e) {
-                    cv.put(SipProfileState.STATUS_CODE,
-                            SipCallSession.StatusCode.INTERNAL_SERVER_ERROR);
+                    cv.put(SipProfileState.STATUS_CODE, SipCallSession.StatusCode.INTERNAL_SERVER_ERROR);
                 }
 
                 cv.put(SipProfileState.STATUS_TEXT, pjStrToString(pjAccountInfo.getStatus_text()));
@@ -1717,8 +1716,7 @@ public class PjSipService {
     public static long getAccountIdForPjsipId(Context ctxt, int pjId) {
         long accId = SipProfile.INVALID_ID;
 
-        Cursor c = ctxt.getContentResolver().query(SipProfile.ACCOUNT_STATUS_URI, null, null,
-                null, null);
+        Cursor c = ctxt.getContentResolver().query(SipProfile.ACCOUNT_STATUS_URI, null, null, null, null);
         if (c != null) {
             try {
                 c.moveToFirst();

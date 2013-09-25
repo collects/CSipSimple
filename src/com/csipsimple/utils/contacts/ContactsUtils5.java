@@ -699,9 +699,7 @@ public class ContactsUtils5 extends ContactsWrapper {
     }
 
     @Override
-    public void updateCSipPresence(Context ctxt, String buddyUri,
-            SipManager.PresenceStatus presStatus, String statusText) {
-
+    public void updateCSipPresence(Context ctxt, String buddyUri, SipManager.PresenceStatus presStatus, String statusText) {
         if (Compatibility.isCompatible(8)) {
             // if(csipDatasId.containsKey(buddyUri)) {
             // long dataId = csipDatasId.get(buddyUri);
@@ -733,8 +731,7 @@ public class ContactsUtils5 extends ContactsWrapper {
 
             ArrayList<ContentProviderOperation> operationList = new ArrayList<ContentProviderOperation>();
 
-            ContentProviderOperation.Builder builder = ContentProviderOperation
-                    .newInsert(StatusUpdates.CONTENT_URI);
+            ContentProviderOperation.Builder builder = ContentProviderOperation.newInsert(StatusUpdates.CONTENT_URI);
             // builder.withValue(StatusUpdates.DATA_ID, dataId);
             builder.withValue(StatusUpdates.CUSTOM_PROTOCOL, SipManager.PROTOCOL_CSIP);
             builder.withValue(StatusUpdates.PROTOCOL, CommonDataKinds.Im.PROTOCOL_CUSTOM);

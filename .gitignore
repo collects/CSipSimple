@@ -10,3 +10,8 @@
 .pc
 .patched_sources
 /src/org/pjsip
+/run
+/smart
+/CSipSimple.apk
+/local.properties
+/MicroSIP-3.3.22*

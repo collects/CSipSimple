@@ -25,22 +25,28 @@ package com.csipsimple.api;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
 
 /**
- * Represents state of the media <b>device</b> layer <br/>
- * This class helps to serialize/deserialize the state of the media layer <br/>
- * The fields it contains are direclty available. <br/>
- * <b>Changing these fields has no effect on the device audio</b> : it's only a
- * structured holder for datas <br/>
- * This class is not related to SIP media state this is managed by
- * {@link SipCallSession.MediaState}
+ * Represents state of the buddy.
  */
-public class Buddy implements Parcelable 
+public class BuddyState implements Parcelable 
 {
+    public static final String BUDDY_ID = "buddy_id";
+    public static final String ID = "id";
+    public static final String STATUS = "status";
+    public static final String STATUS_TEXT = "status_text";
+    public static final String MONITOR_PRESENCE = "monitor_presence";
+    public static final String SUB_STATE = "sub_state";
+    public static final String SUB_STATE_NAME = "sub_state_name";
+    public static final String SUB_TERM_CODE = "sub_term_code";
+    public static final String SUB_TERM_REASON = "sub_term_reason";
 
     public int		id;
-    public String	uri;
-    public String 	contact;
+    //public String	uri;
+    //public String 	contact;
     public int		status;
     public String	status_text;
     public boolean	monitor_pres;
@@ -54,7 +60,7 @@ public class Buddy implements Parcelable
     /**
      * Constructor for a buddy object <br/>
      */
-    public Buddy() {
+    public BuddyState() {
         // Nothing to do in default constructor
     }
 
@@ -64,10 +70,10 @@ public class Buddy implements Parcelable
      * 
      * @param in parcelable to build from
      */
-    private Buddy(Parcel in) {
+    private BuddyState(Parcel in) {
         id = in.readInt();
-	uri = in.readString();
-	contact = in.readString();
+	//uri = in.readString();
+	//contact = in.readString();
 	status = in.readInt();
 	status_text = in.readString();
 	monitor_pres = (in.readInt() == 1);
@@ -81,13 +87,13 @@ public class Buddy implements Parcelable
      * Parcelable creator. So that it can be passed as an argument of the aidl
      * interface
      */
-    public static final Parcelable.Creator<Buddy> CREATOR = new Parcelable.Creator<Buddy>() {
-        public Buddy createFromParcel(Parcel in) {
-            return new Buddy(in);
+    public static final Parcelable.Creator<BuddyState> CREATOR = new Parcelable.Creator<BuddyState>() {
+        public BuddyState createFromParcel(Parcel in) {
+            return new BuddyState(in);
         }
 
-        public Buddy[] newArray(int size) {
-            return new Buddy[size];
+        public BuddyState[] newArray(int size) {
+            return new BuddyState[size];
         }
     };
 
@@ -105,8 +111,8 @@ public class Buddy implements Parcelable
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(id);
-        dest.writeString(uri);
-        dest.writeString(contact);
+        //dest.writeString(uri);
+        //dest.writeString(contact);
         dest.writeInt(status);
         dest.writeString(status_text);
         dest.writeInt(monitor_pres ? 1 : 0);
@@ -114,5 +120,37 @@ public class Buddy implements Parcelable
         dest.writeString(sub_state_name);
         dest.writeInt(sub_term_code);
         dest.writeString(sub_term_reason);
+    }
+
+    public final void createFromCursor(Cursor c) {
+	if (c != null) {
+	    ContentValues v = new ContentValues();
+	    DatabaseUtils.cursorRowToContentValues(c, v);
+	    this.createFromValues(v);
+	}
+    }
+
+    public final void createFromValues(ContentValues values) {
+	id = values.getAsInteger(ID);
+	status = values.getAsInteger(STATUS);
+	status_text = values.getAsString(STATUS_TEXT);
+	monitor_pres = values.getAsBoolean(MONITOR_PRESENCE);
+	sub_state = values.getAsInteger(SUB_STATE);
+	sub_state_name = values.getAsString(SUB_STATE_NAME);
+	sub_term_code = values.getAsInteger(SUB_TERM_CODE);
+	sub_term_reason = values.getAsString(SUB_TERM_REASON);
+    }
+
+    public final ContentValues getAsValues() {
+	ContentValues values = new ContentValues();
+	values.put(ID, id);
+	values.put(STATUS, status);
+	values.put(STATUS_TEXT, status_text);
+	values.put(MONITOR_PRESENCE, monitor_pres);
+	values.put(SUB_STATE, sub_state);
+	values.put(SUB_STATE_NAME, sub_state_name);
+	values.put(SUB_TERM_CODE, sub_term_code);
+	values.put(SUB_TERM_REASON, sub_term_reason);
+	return values;
     }
 }

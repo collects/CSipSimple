@@ -113,8 +113,7 @@ public class DynamicReceiver4 extends BroadcastReceiver {
         String action = intent.getAction();
         Log.d(THIS_FILE, "Internal receive " + action);
         if (action.equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
-            ConnectivityManager cm =
-                    (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
             onConnectivityChanged(activeNetwork, isSticky);
         } else if (action.equals(SipManager.ACTION_SIP_ACCOUNT_CHANGED)) {
@@ -129,9 +128,9 @@ public class DynamicReceiver4 extends BroadcastReceiver {
             }
         } else if (action.equals(SipManager.ACTION_SIP_CAN_BE_STOPPED)) {
             service.cleanStop();
-        } else if (action.equals(SipManager.ACTION_SIP_REQUEST_RESTART)){
+        } else if (action.equals(SipManager.ACTION_SIP_REQUEST_RESTART)) {
             service.restartSipStack();
-        } else if(action.equals(ACTION_VPN_CONNECTIVITY)) {
+        } else if (action.equals(ACTION_VPN_CONNECTIVITY)) {
             onConnectivityChanged(null, isSticky);
         }
     }

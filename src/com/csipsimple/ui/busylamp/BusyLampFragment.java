@@ -188,14 +188,14 @@ public class BusyLampFragment extends SherlockListFragment
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Log.d(THIS_FILE, "buddies: "+id+", "+args);
+        Log.d(THIS_FILE, "onCreateLoader: "+id+", "+args);
         Builder builder = SipProfile.BUDDY_URI.buildUpon(); //.appendEncodedPath(remoteFrom);
         return new CursorLoader(getActivity(), builder.build(), null, null, null, SipProfile.FIELD_DISPLAY_NAME + " ASC");
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        Log.d(THIS_FILE, "buddies: "+data.getCount());
+        Log.d(THIS_FILE, "onLoadFinished: buddies: "+data.getCount());
         mAdapter.swapCursor(data);
 	getListView().setAdapter(mAdapter);
 	mProgressContainer.setVisibility(View.GONE);

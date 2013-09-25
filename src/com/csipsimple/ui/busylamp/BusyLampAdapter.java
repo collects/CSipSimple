@@ -22,6 +22,7 @@
 package com.csipsimple.ui.busylamp;
 
 import android.content.Context;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
@@ -44,6 +45,7 @@ import com.csipsimple.R;
 import com.csipsimple.api.SipManager;
 import com.csipsimple.api.SipMessage;
 import com.csipsimple.api.SipProfile;
+import com.csipsimple.api.BuddyState;
 import com.csipsimple.models.CallerInfo;
 import com.csipsimple.utils.ContactsAsyncHelper;
 import com.csipsimple.utils.SmileyParser;
@@ -56,9 +58,11 @@ import java.util.Date;
 public class BusyLampAdapter extends ResourceCursorAdapter
 {
     private static SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm:ss");
+    private Context mContext = null;
     
     public BusyLampAdapter(Context context, Cursor c) {
         super(context, R.layout.busylamp_list_item, c, 0);
+	mContext = context;
     }
 
     @Override
@@ -76,9 +80,7 @@ public class BusyLampAdapter extends ResourceCursorAdapter
 	final TextView contact = (TextView) view.findViewById(R.id.contact);
 	final TextView name = (TextView) view.findViewById(R.id.name);
 	boolean subscribe = values.getAsBoolean(SipProfile.FIELD_SUBSCRIBE);
-	int status = -1;
-	if (values.containsKey(SipProfile.FIELD_STATUS)) 
-	    values.getAsInteger(SipProfile.FIELD_STATUS);
+	int status = getBuddyStatus(values.getAsLong("_id"));
 	name.setText(values.getAsString(SipProfile.FIELD_DISPLAY_NAME));
 	contact.setText(values.getAsString(SipProfile.FIELD_CONTACT));
 	if (SipManager.PresenceStatus.values().length < status) status = -1;
@@ -115,5 +117,16 @@ public class BusyLampAdapter extends ResourceCursorAdapter
 	default:
 	    statusLight.setImageResource(android.R.drawable.presence_offline);
 	}
+    }
+
+    private int getBuddyStatus(long id) {
+	if (mContext == null) return -1;
+	Cursor cursor = mContext.getContentResolver().query(ContentUris.withAppendedId(SipProfile.BUDDY_STATUS_ID_URI_BASE, id), null, null, null, null);
+	if (cursor == null) return -1;
+	if (cursor.getCount() <= 0) return -1;
+	if (!cursor.moveToFirst()) return -1;
+	BuddyState bs = new BuddyState();
+	bs.createFromCursor(cursor);
+	return bs.status;
     }
 }

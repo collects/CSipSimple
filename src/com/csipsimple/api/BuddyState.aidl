@@ -21,4 +21,4 @@
  *  This file and this file only is also released under Apache license as an API file
  */
 package com.csipsimple.api;
-parcelable Buddy;
+parcelable BuddyState;

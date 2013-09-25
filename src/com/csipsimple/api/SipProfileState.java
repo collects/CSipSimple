@@ -304,7 +304,6 @@ public class SipProfileState implements Parcelable, Serializable{
 		if(tmp_i != null) {
 			priority = tmp_i;
 		}
-		
 	}
 
     /**
