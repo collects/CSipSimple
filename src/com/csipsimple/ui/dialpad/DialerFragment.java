@@ -382,6 +382,14 @@ public class DialerFragment extends SherlockFragment implements OnClickListener,
                 accId = account.id;
             }
             autoCompleteAdapter.setSelectedAccount(accId);
+	    try {
+		final ContentValues cv = new ContentValues();
+		cv.put(SipProfile.FIELD_ACCOUNT, accId);
+		getActivity().getContentResolver()
+		    .update(SipProfile.ACCOUNT_STATUS_URI.buildUpon().appendPath(SipProfile.FIELD_SELECTED).build(), cv, null, null);
+	    } catch (Exception e) {
+		Log.e(THIS_FILE, "update selected account failed...", e);
+	    }
         }
     };
     

@@ -200,6 +200,8 @@ public class SipProfile implements Parcelable {
 								   + "://"
 								   + SipManager.AUTHORITY + "/" + ACCOUNTS_STATUS_TABLE_NAME + "/");
 
+    public static final String FIELD_BUDDY_ID = "buddy_id";
+
     /**
      * Table name of content provider for buddy storage.
      */
@@ -221,6 +223,8 @@ public class SipProfile implements Parcelable {
 
     public final static Uri BUDDY_STATUS_ID_URI_BASE = Uri.parse(ContentResolver.SCHEME_CONTENT + "://"
 	  + SipManager.AUTHORITY + "/" + BUDDIES_STATUS_TABLE_NAME + "/");
+
+    public static final String _ID = "_id";
 
     // Fields for table accounts
     /**
@@ -267,6 +271,11 @@ public class SipProfile implements Parcelable {
      * The account/buddy status.
      */
     public static final String FIELD_STATUS = "status";
+    public static final String FIELD_STATUS_TEXT = "status_text";
+    /**
+     * @see Boolean
+     */
+    public static final String FIELD_SELECTED = "selected";
     /**
      * The priority of the account.<br/>
      * This is used in the interface when presenting list of accounts.<br/>
@@ -288,6 +297,11 @@ public class SipProfile implements Parcelable {
      * @see String
      */
     public static final String FIELD_ACC_ID = "acc_id";
+
+    /**
+     *  Foreign key to account
+     */
+    public static final String FIELD_ACCOUNT = "account";
     
     /**
      * Data useful for the wizard internal use.

@@ -49,17 +49,25 @@ import com.csipsimple.api.BuddyState;
 import com.csipsimple.models.CallerInfo;
 import com.csipsimple.utils.ContactsAsyncHelper;
 import com.csipsimple.utils.SmileyParser;
+import com.csipsimple.utils.Log;
 import com.csipsimple.widgets.contactbadge.QuickContactBadge;
 import com.csipsimple.widgets.contactbadge.QuickContactBadge.ArrowPosition;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 public class BusyLampAdapter extends ResourceCursorAdapter
 {
+    private static final String THIS_FILE = "BusyLampAdt";
     private static SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm:ss");
     private Context mContext = null;
-    
+
+    private final Map<Long, BuddyState> buddiesStatus = new HashMap<Long, BuddyState>();
+
     public BusyLampAdapter(Context context, Cursor c) {
         super(context, R.layout.busylamp_list_item, c, 0);
 	mContext = context;
@@ -80,12 +88,14 @@ public class BusyLampAdapter extends ResourceCursorAdapter
 	final TextView contact = (TextView) view.findViewById(R.id.contact);
 	final TextView name = (TextView) view.findViewById(R.id.name);
 	boolean subscribe = values.getAsBoolean(SipProfile.FIELD_SUBSCRIBE);
-	int status = getBuddyStatus(values.getAsLong("_id"));
+	BuddyState bs = getBuddyStatus(values.getAsLong(SipProfile._ID));
 	name.setText(values.getAsString(SipProfile.FIELD_DISPLAY_NAME));
 	contact.setText(values.getAsString(SipProfile.FIELD_CONTACT));
+	int status = bs == null ? -1 : bs.status;
 	if (SipManager.PresenceStatus.values().length < status) status = -1;
 	if (status < 0) status = 0;
 	statusLight.setTag(null);
+        Log.d(THIS_FILE, "BuddyStatus: "+status+", "+values);
 	switch (SipManager.PresenceStatus.values()[status]) {
 	case ONLINE:
 	    statusLight.setImageResource(android.R.drawable.presence_online);
@@ -119,14 +129,23 @@ public class BusyLampAdapter extends ResourceCursorAdapter
 	}
     }
 
-    private int getBuddyStatus(long id) {
-	if (mContext == null) return -1;
+    public void setStatus(long id, BuddyState bs) {
+	buddiesStatus.put(id, bs);
+    }
+
+    private BuddyState getBuddyStatus(long id) {
+        //Log.d(THIS_FILE, "getBuddyStatus: "+id+", "+buddiesStatus);
+	if (buddiesStatus.containsKey(id)) {
+	    BuddyState bs = buddiesStatus.get(id);
+	    return bs;
+	}
+	if (mContext == null) return null;
 	Cursor cursor = mContext.getContentResolver().query(ContentUris.withAppendedId(SipProfile.BUDDY_STATUS_ID_URI_BASE, id), null, null, null, null);
-	if (cursor == null) return -1;
-	if (cursor.getCount() <= 0) return -1;
-	if (!cursor.moveToFirst()) return -1;
+	if (cursor == null) return null;
+	if (cursor.getCount() <= 0) return null;
+	if (!cursor.moveToFirst()) return null;
 	BuddyState bs = new BuddyState();
 	bs.createFromCursor(cursor);
-	return bs.status;
+	return bs;
     }
 }

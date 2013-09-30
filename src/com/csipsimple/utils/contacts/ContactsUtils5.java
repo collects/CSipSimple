@@ -760,7 +760,8 @@ public class ContactsUtils5 extends ContactsWrapper {
             } catch (RemoteException e) {
                 Log.e(THIS_FILE, "Can't update status", e);
             } catch (OperationApplicationException e) {
-                Log.e(THIS_FILE, "Can't update status", e);
+                //Log.e(THIS_FILE, "Can't update status", e);
+                Log.e(THIS_FILE, "Can't update status");
             }
 
             // }

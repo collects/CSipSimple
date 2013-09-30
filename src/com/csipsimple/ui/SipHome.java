@@ -91,7 +91,6 @@ public class SipHome extends SherlockFragmentActivity implements OnWarningChange
     public static final int HELP_MENU = Menu.FIRST + 4;
     public static final int DISTRIB_ACCOUNT_MENU = Menu.FIRST + 5;
 
-
     private static final String THIS_FILE = "SIP_HOME";
 
     private final static int TAB_ID_BUSYLAMP = 0;

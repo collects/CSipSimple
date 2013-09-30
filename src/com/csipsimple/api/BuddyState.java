@@ -36,6 +36,8 @@ public class BuddyState implements Parcelable
 {
     public static final String BUDDY_ID = "buddy_id";
     public static final String ID = "id";
+    public static final String URI = "uri";
+    public static final String CONTACT = "contact";
     public static final String STATUS = "status";
     public static final String STATUS_TEXT = "status_text";
     public static final String MONITOR_PRESENCE = "monitor_presence";
@@ -45,8 +47,8 @@ public class BuddyState implements Parcelable
     public static final String SUB_TERM_REASON = "sub_term_reason";
 
     public int		id;
-    //public String	uri;
-    //public String 	contact;
+    public String	uri;
+    public String 	contact;
     public int		status;
     public String	status_text;
     public boolean	monitor_pres;
@@ -72,8 +74,8 @@ public class BuddyState implements Parcelable
      */
     private BuddyState(Parcel in) {
         id = in.readInt();
-	//uri = in.readString();
-	//contact = in.readString();
+	uri = in.readString();
+	contact = in.readString();
 	status = in.readInt();
 	status_text = in.readString();
 	monitor_pres = (in.readInt() == 1);
@@ -111,8 +113,8 @@ public class BuddyState implements Parcelable
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(id);
-        //dest.writeString(uri);
-        //dest.writeString(contact);
+        dest.writeString(uri);
+        dest.writeString(contact);
         dest.writeInt(status);
         dest.writeString(status_text);
         dest.writeInt(monitor_pres ? 1 : 0);
@@ -132,6 +134,8 @@ public class BuddyState implements Parcelable
 
     public final void createFromValues(ContentValues values) {
 	id = values.getAsInteger(ID);
+	uri = values.getAsString(URI);
+	contact = values.getAsString(CONTACT);
 	status = values.getAsInteger(STATUS);
 	status_text = values.getAsString(STATUS_TEXT);
 	monitor_pres = values.getAsBoolean(MONITOR_PRESENCE);
@@ -144,6 +148,8 @@ public class BuddyState implements Parcelable
     public final ContentValues getAsValues() {
 	ContentValues values = new ContentValues();
 	values.put(ID, id);
+	values.put(URI, uri);
+	values.put(CONTACT, contact);
 	values.put(STATUS, status);
 	values.put(STATUS_TEXT, status_text);
 	values.put(MONITOR_PRESENCE, monitor_pres);

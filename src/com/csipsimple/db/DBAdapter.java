@@ -53,34 +53,34 @@ public class DBAdapter
 	private static final String TABLE_ACCOUNT_CREATE = "CREATE TABLE IF NOT EXISTS "
 	    + SipProfile.ACCOUNTS_TABLE_NAME
 	    + " ("
-	    + SipProfile.FIELD_ID+ 				" INTEGER PRIMARY KEY AUTOINCREMENT,"
+	    + SipProfile.FIELD_ID				+ " INTEGER PRIMARY KEY AUTOINCREMENT,"
 
 	    // Application relative fields
 	    + SipProfile.FIELD_ACTIVE				+ " INTEGER,"
 	    + SipProfile.FIELD_WIZARD				+ " TEXT,"
-	    + SipProfile.FIELD_DISPLAY_NAME		+ " TEXT,"
+	    + SipProfile.FIELD_DISPLAY_NAME			+ " TEXT,"
 
 	    // Here comes pjsua_acc_config fields
 	    + SipProfile.FIELD_PRIORITY 			+ " INTEGER," 
 	    + SipProfile.FIELD_ACC_ID 				+ " TEXT NOT NULL,"
 	    + SipProfile.FIELD_REG_URI				+ " TEXT," 
-	    + SipProfile.FIELD_MWI_ENABLED 		+ " BOOLEAN,"
-	    + SipProfile.FIELD_PUBLISH_ENABLED 	+ " INTEGER," 
+	    + SipProfile.FIELD_MWI_ENABLED			+ " BOOLEAN,"
+	    + SipProfile.FIELD_PUBLISH_ENABLED			+ " INTEGER," 
 	    + SipProfile.FIELD_REG_TIMEOUT 		+ " INTEGER," 
 	    + SipProfile.FIELD_KA_INTERVAL 		+ " INTEGER," 
 	    + SipProfile.FIELD_PIDF_TUPLE_ID 		+ " TEXT,"
 	    + SipProfile.FIELD_FORCE_CONTACT 		+ " TEXT,"
-	    + SipProfile.FIELD_ALLOW_CONTACT_REWRITE + " INTEGER,"
-	    + SipProfile.FIELD_CONTACT_REWRITE_METHOD + " INTEGER,"
+	    + SipProfile.FIELD_ALLOW_CONTACT_REWRITE	+ " INTEGER,"
+	    + SipProfile.FIELD_CONTACT_REWRITE_METHOD	+ " INTEGER,"
 	    + SipProfile.FIELD_CONTACT_PARAMS 		+ " TEXT,"
 	    + SipProfile.FIELD_CONTACT_URI_PARAMS	+ " TEXT,"
-	    + SipProfile.FIELD_TRANSPORT	 		+ " INTEGER," 
-	    + SipProfile.FIELD_DEFAULT_URI_SCHEME           + " TEXT," 
+	    + SipProfile.FIELD_TRANSPORT	 	+ " INTEGER," 
+	    + SipProfile.FIELD_DEFAULT_URI_SCHEME       + " TEXT," 
 	    + SipProfile.FIELD_USE_SRTP	 			+ " INTEGER," 
 	    + SipProfile.FIELD_USE_ZRTP	 			+ " INTEGER," 
 
 	    // Proxy infos
-	    + SipProfile.FIELD_PROXY				+ " TEXT,"
+	    + SipProfile.FIELD_PROXY			+ " TEXT,"
 	    + SipProfile.FIELD_REG_USE_PROXY		+ " INTEGER,"
 
 	    // And now cred_info since for now only one cred info can be managed
@@ -132,12 +132,11 @@ public class DBAdapter
 	private static final String TABLE_BUDDY_CREATE = "CREATE TABLE IF NOT EXISTS "
 	    + SipProfile.BUDDIES_TABLE_NAME
 	    + "("
-	    + "_id" /*SipProfile.FIELD_ID*/			+ " INTEGER PRIMARY KEY AUTOINCREMENT,"
-	    + SipProfile.FIELD_ACC_ID				+ " INTEGER,"
-	    + SipProfile.FIELD_URI				+ " TEXT NOT NULL,"
-	    + SipProfile.FIELD_CONTACT				+ " TEXT NOT NULL,"
-	    + SipProfile.FIELD_DISPLAY_NAME			+ " TEXT,"
-	    + SipProfile.FIELD_SUBSCRIBE			+ " BOOLEAN"
+	    + SipProfile._ID				+ " INTEGER PRIMARY KEY AUTOINCREMENT,"
+	    + SipProfile.FIELD_ACCOUNT			+ " INTEGER NOT NULL,"
+	    + SipProfile.FIELD_CONTACT			+ " TEXT NOT NULL,"
+	    + SipProfile.FIELD_DISPLAY_NAME		+ " TEXT,"
+	    + SipProfile.FIELD_SUBSCRIBE		+ " BOOLEAN"
 	    + ");";
 		
 	private final static String TABLE_CALLLOGS_CREATE = "CREATE TABLE IF NOT EXISTS "
@@ -193,7 +192,7 @@ public class DBAdapter
 	}
 
 	@Override
-	    public void onCreate(SQLiteDatabase db) {
+	public void onCreate(SQLiteDatabase db) {
 	    db.execSQL(TABLE_ACCOUNT_CREATE);
 	    db.execSQL(TABLE_BUDDY_CREATE);
 	    db.execSQL(TABLE_CALLLOGS_CREATE);
@@ -202,7 +201,7 @@ public class DBAdapter
 	}
 
 	@Override
-	    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 	    Log.w(THIS_FILE, "Upgrading database from version "
 		  + oldVersion + " to " + newVersion);
 	    if(oldVersion < 1) {

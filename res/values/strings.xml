@@ -122,4 +122,7 @@
     <string name="uri_im">IM with custom SIP scheme</string>
     <string name="uri_sip">Internet call</string>
 
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+
 </resources>

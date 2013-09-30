@@ -24,12 +24,15 @@ package com.csipsimple.service;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo.DetailedState;
 import android.net.wifi.WifiInfo;
@@ -262,7 +265,7 @@ public class SipService extends Service {
 			    Log.d(THIS_FILE, "will sms " + callee);
 			    if(pjService != null) {
 				ToCall called = pjService.sendMessage(callee, message, accountId);
-				if(called!=null) {
+				if (called!=null) {
 				    SipMessage msg = new SipMessage(SipMessage.SELF, 
 								    SipUri.getCanonicalSipContact(callee), SipUri.getCanonicalSipContact(called.getCallee()), 
 								    message, "text/plain", System.currentTimeMillis(), 
@@ -270,7 +273,7 @@ public class SipService extends Service {
 				    msg.setRead(true);
 				    getContentResolver().insert(SipMessage.MESSAGE_URI, msg.getContentValues());
 				    Log.d(THIS_FILE, "Inserted "+msg.getTo());
-				}else {
+				} else {
 				    SipService.this.notifyUserOfMessage( getString(R.string.invalid_sip_uri)+ " : "+callee );
 				}
 			    }else {
@@ -1364,9 +1367,6 @@ public class SipService extends Service {
 	addAllAccounts();
     }
 
-
-	
-	
     public SipProfileState getSipProfileState(int accountDbId) {
 	final SipProfile acc = getAccount(accountDbId);
 	if(pjService != null && acc != null) {
@@ -1418,17 +1418,72 @@ public class SipService extends Service {
 		
 	if (hasSomeActiveAccount) {
 	    acquireResources();
+	    //updateBuddies();
 	} else {
 	    releaseResources();
 	}
     }
 
-    private synchronized void updateBuddiesState() {
-	Log.d(THIS_FILE, "updateBuddiesState: ...");
+    private void updateBuddies() {
+	Cursor c = getContentResolver().query(SipProfile.ACCOUNT_STATUS_URI.buildUpon().appendPath(SipProfile.FIELD_SELECTED).build(), null, null, null, null);
+	if (c.moveToNext()) {
+	    ContentValues v = new ContentValues();
+	    DatabaseUtils.cursorRowToContentValues(c, v);
+	    final long acc = v.getAsLong(SipProfile.FIELD_ACCOUNT);
+	    if (acc == -1) {
+		Log.d(THIS_FILE, "Update buddies: no account");
+		return;
+	    }
 
+	    c = getContentResolver().query(ContentUris.withAppendedId(SipProfile.ACCOUNT_ID_URI_BASE, acc),
+					   new String[] {
+					       SipProfile.FIELD_ACTIVE,
+					       SipProfile.FIELD_ID,
+					       SipProfile.FIELD_DISPLAY_NAME,
+					       SipProfile.FIELD_REG_URI,
+					   }, null, null, null);
+
+	    String[] parts = null;
+	    if (c.moveToNext()) {
+		v = new ContentValues();
+		DatabaseUtils.cursorRowToContentValues(c, v);
+		long id = v.getAsLong(SipProfile.FIELD_ID);
+		String s1 = v.getAsString(SipProfile.FIELD_DISPLAY_NAME);
+		String s2 = v.getAsString(SipProfile.FIELD_REG_URI);
+		Log.d(THIS_FILE, "account: "+id+" ("+acc+"), "+s1+", "+s2);
+		parts = s2.split(":");
+		c.close();
+	    } else {
+		c.close();
+		return;
+	    }
+
+	    if (parts == null || parts.length < 2) {
+		//Log.e(THIS_FILE, "buddy: "+v);
+		return;
+	    }
+
+	    final String srv = parts[1].trim();
+	    final Cursor cc = getContentResolver().query(SipProfile.BUDDY_URI, new String[]{SipProfile.FIELD_CONTACT,SipProfile.FIELD_DISPLAY_NAME}, SipProfile.FIELD_ACCOUNT+"=?", new String[]{""+acc}, null);
+	    getExecutor().execute(new SipRunnable() { @Override protected void doRun() throws SameThreadException {
+		while (cc.moveToNext()) {
+		    final ContentValues v = new ContentValues();
+		    DatabaseUtils.cursorRowToContentValues(cc, v);
+		    String s = v.getAsString(SipProfile.FIELD_CONTACT);
+		    String u = "sip:"+s+"@"+srv;
+		    //addBuddy(u);
+		    Log.d(THIS_FILE, "selected: "+u+", "+v);
+		}
+		cc.close();
+	    }});
+	}
+    }
+
+    private synchronized void updateBuddiesState() {
+	Log.d(THIS_FILE, "Update buddies state");
+	/*
 	final Cursor c = getContentResolver().query(SipProfile.BUDDY_STATUS_URI, null, null, null, null);
 	getExecutor().execute(new SipRunnable() { @Override protected void doRun() throws SameThreadException {
-	    /*
 	    while (c.moveToNext()) {
 		final ContentValues v = new ContentValues();
 		DatabaseUtils.cursorRowToContentValues(c, v);
@@ -1436,9 +1491,9 @@ public class SipService extends Service {
 		addBuddy("sip:" + s);
 		Log.d(THIS_FILE, "updateBuddiesState: add: "+s);
 	    }
-	    */
 	    c.close();
 	}});
+	*/
     }
 	
     /**
@@ -1703,7 +1758,6 @@ public class SipService extends Service {
 	}
     }
 
-	
     private static Looper createLooper() {
 	//	synchronized (executorThread) {
 	if(executorThread == null) {
@@ -1715,8 +1769,6 @@ public class SipService extends Service {
 	//	}
         return executorThread.getLooper();
     }
-    
-    
 
     // Executes immediate tasks in a single executorThread.
     // Hold/release wake lock for running tasks

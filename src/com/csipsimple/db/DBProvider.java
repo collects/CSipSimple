@@ -26,6 +26,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.MatrixCursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
@@ -68,6 +69,8 @@ public class DBProvider extends ContentProvider {
     private static final int THREADS = 11, THREADS_ID = 12;
     private static final int BUDDIES = 13, BUDDIES_ID = 14;
     private static final int BUDDIES_STATUS = 15, BUDDIES_STATUS_ID = 16;
+    private static final int BUDDIES_SELECTED = 17;
+    private static final int ACCOUNT_STATUS_SELECTED = 18;
     
     /**
      * A UriMatcher instance
@@ -79,10 +82,12 @@ public class DBProvider extends ContentProvider {
     	URI_MATCHER.addURI(SipManager.AUTHORITY, SipProfile.ACCOUNTS_TABLE_NAME, ACCOUNTS);
     	URI_MATCHER.addURI(SipManager.AUTHORITY, SipProfile.ACCOUNTS_TABLE_NAME + "/#", ACCOUNTS_ID);
     	URI_MATCHER.addURI(SipManager.AUTHORITY, SipProfile.ACCOUNTS_STATUS_TABLE_NAME, ACCOUNTS_STATUS);
+    	URI_MATCHER.addURI(SipManager.AUTHORITY, SipProfile.ACCOUNTS_STATUS_TABLE_NAME + "/" + SipProfile.FIELD_SELECTED, ACCOUNT_STATUS_SELECTED);
     	URI_MATCHER.addURI(SipManager.AUTHORITY, SipProfile.ACCOUNTS_STATUS_TABLE_NAME + "/#", ACCOUNTS_STATUS_ID);
 	URI_MATCHER.addURI(SipManager.AUTHORITY, SipProfile.BUDDIES_STATUS_TABLE_NAME, BUDDIES_STATUS);
 	URI_MATCHER.addURI(SipManager.AUTHORITY, SipProfile.BUDDIES_STATUS_TABLE_NAME + "/#", BUDDIES_STATUS_ID);
 	URI_MATCHER.addURI(SipManager.AUTHORITY, SipProfile.BUDDIES_TABLE_NAME, BUDDIES);
+	URI_MATCHER.addURI(SipManager.AUTHORITY, SipProfile.BUDDIES_TABLE_NAME + "/" + SipProfile.FIELD_SELECTED, BUDDIES_SELECTED);
 	URI_MATCHER.addURI(SipManager.AUTHORITY, SipProfile.BUDDIES_TABLE_NAME + "/#", BUDDIES_ID);
     	URI_MATCHER.addURI(SipManager.AUTHORITY, SipManager.CALLLOGS_TABLE_NAME, CALLLOGS);
     	URI_MATCHER.addURI(SipManager.AUTHORITY, SipManager.CALLLOGS_TABLE_NAME + "/#", CALLLOGS_ID);
@@ -193,10 +198,11 @@ public class DBProvider extends ContentProvider {
     };
 
     private static final String[] BUDDY_FULL_PROJECTION = new String[] {
-	SipProfile.FIELD_ID,
+	SipProfile._ID,
+	SipProfile.FIELD_ACCOUNT,
 	SipProfile.FIELD_CONTACT,
-	SipProfile.FIELD_SUBSCRIBE,
 	SipProfile.FIELD_DISPLAY_NAME,
+	SipProfile.FIELD_SUBSCRIBE,
     };
 
     private static final String[] CALL_LOG_FULL_PROJECTION = new String[] {
@@ -239,6 +245,8 @@ public class DBProvider extends ContentProvider {
 
     private static final String THIS_FILE = "DBProvider";
 
+    private long profileStatusSelected = -1;
+
     // Map active account id (id for sql settings database) with SipProfileState that contains stack id and other status infos
     private final Map<Long, ContentValues> profilesStatus = new HashMap<Long, ContentValues>();
     private final Map<Long, ContentValues> buddiesStatus = new HashMap<Long, ContentValues>();
@@ -276,7 +284,7 @@ public class DBProvider extends ContentProvider {
     }
 	
     @Override
-	public boolean onCreate() {
+    public boolean onCreate() {
 	mOpenHelper = new DatabaseHelper(getContext());
         // Assumes that any failures will be reported by a thrown exception.
         return true;
@@ -319,9 +327,12 @@ public class DBProvider extends ContentProvider {
 	    count = db.delete(SipProfile.BUDDIES_TABLE_NAME, where, whereArgs);
 	    break;
 	case BUDDIES_ID:
-	    finalWhere = DatabaseUtilsCompat.concatenateWhere(SipProfile.FIELD_ID + " = " + ContentUris.parseId(uri), where);
-	    count = db.delete(SipProfile.BUDDIES_TABLE_NAME, finalWhere, whereArgs);
-	    break;
+	    {
+		final long id = ContentUris.parseId(uri);
+		finalWhere = DatabaseUtilsCompat.concatenateWhere(SipProfile._ID + "=" + id, where);
+		count = db.delete(SipProfile.BUDDIES_TABLE_NAME, finalWhere, whereArgs);
+		synchronized (buddiesStatus) { buddiesStatus.remove(id); }
+	    } break;
 	case CALLLOGS:
 	    count = db.delete(SipManager.CALLLOGS_TABLE_NAME, where, whereArgs);
 	    break;
@@ -369,6 +380,11 @@ public class DBProvider extends ContentProvider {
 		profilesStatus.remove(id);
 	    }
 	    break;
+	case ACCOUNT_STATUS_SELECTED:
+	    synchronized (profilesStatus) {
+		profileStatusSelected = -1;
+		Log.d(THIS_FILE, "selected: "+profileStatusSelected);
+	    } break; 
 	default:
 	    throw new IllegalArgumentException(UNKNOWN_URI_LOG + uri);
         }
@@ -380,7 +396,9 @@ public class DBProvider extends ContentProvider {
 	    if(rowId >= 0) {
 		if(matched == ACCOUNTS_ID) {
 		    broadcastAccountChange(rowId);
-		}else if(matched == ACCOUNTS_STATUS_ID) {
+		} else if(matched == ACCOUNTS_STATUS_ID) {
+		    long id = ContentUris.parseId(uri);
+		    if (id == profileStatusSelected) profileStatusSelected = -1;
 		    broadcastRegistrationChange(rowId);
 		}
 	    }
@@ -403,6 +421,13 @@ public class DBProvider extends ContentProvider {
 	int matched = URI_MATCHER.match(uri);
     	String matchedTable = null;
     	Uri baseInsertedUri = null;
+
+        ContentValues values;
+        if (initialValues != null) {
+            values = new ContentValues(initialValues);
+        } else {
+            values = new ContentValues();
+        }
         
     	switch (matched) {
 	case ACCOUNTS:
@@ -414,6 +439,13 @@ public class DBProvider extends ContentProvider {
 	case BUDDIES_ID:
 	    matchedTable = SipProfile.BUDDIES_TABLE_NAME;
 	    baseInsertedUri = SipProfile.BUDDY_ID_URI_BASE;
+	    if (profileStatusSelected == -1) {
+		Log.d(THIS_FILE, "can't add buddy "+values);
+		return uri;
+	    } else {
+		values.put(SipProfile.FIELD_ACCOUNT, profileStatusSelected);
+	    }
+	    Log.d(THIS_FILE, "insert buddies "+values+", for account "+profileStatusSelected);
 	    break;
 	case CALLLOGS:
 	case CALLLOGS_ID:
@@ -473,14 +505,6 @@ public class DBProvider extends ContentProvider {
             throw new IllegalArgumentException(UNKNOWN_URI_LOG + uri);
         }
 
-        ContentValues values;
-
-        if (initialValues != null) {
-            values = new ContentValues(initialValues);
-        } else {
-            values = new ContentValues();
-        }
-
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 
         long rowId = db.insert(matchedTable, null, values);
@@ -492,20 +516,24 @@ public class DBProvider extends ContentProvider {
             Uri retUri = ContentUris.withAppendedId(baseInsertedUri, rowId);
             getContext().getContentResolver().notifyChange(retUri, null);
             
-            if(matched == ACCOUNTS || matched == ACCOUNTS_ID) {
+            if (matched == ACCOUNTS || matched == ACCOUNTS_ID) {
             	broadcastAccountChange(rowId);
             }
-            if(matched == BUDDIES || matched == BUDDIES_ID) {
+            if (matched == BUDDIES || matched == BUDDIES_ID) {
             	broadcastBuddyChange(rowId);
             }
-            if(matched == CALLLOGS || matched == CALLLOGS_ID) {
+            if (matched == CALLLOGS || matched == CALLLOGS_ID) {
             	db.delete(SipManager.CALLLOGS_TABLE_NAME, CallLog.Calls._ID + " IN " +
 			  "(SELECT "+CallLog.Calls._ID+" FROM "+SipManager.CALLLOGS_TABLE_NAME+" ORDER BY " + 
 			  CallLog.Calls.DEFAULT_SORT_ORDER + " LIMIT -1 OFFSET 500)", null);
             }
-            if(matched == ACCOUNTS_STATUS || matched == ACCOUNTS_STATUS_ID) {
+            if (matched == ACCOUNTS_STATUS || matched == ACCOUNTS_STATUS_ID) {
                 broadcastRegistrationChange(rowId);
             }
+	    if (matched == ACCOUNTS_STATUS_ID) {
+		if (profileStatusSelected == -1)
+		    profileStatusSelected = ContentUris.parseId(uri);
+	    }
             if (matched == FILTERS || matched == FILTERS_ID) {
                 Filter.resetCache();
             }
@@ -563,6 +591,11 @@ public class DBProvider extends ContentProvider {
 	    qb.appendWhere(SipProfile.FIELD_ID + "=?");
 	    finalSelectionArgs = DatabaseUtilsCompat.appendSelectionArgs(selectionArgs, new String[] { uri.getLastPathSegment() });
 	    break;
+	case BUDDIES_SELECTED:
+	    qb.appendWhere(SipProfile.FIELD_ACCOUNT + "=?");
+	    finalSelectionArgs = DatabaseUtilsCompat.appendSelectionArgs(selectionArgs, new String[] { ""+profileStatusSelected });
+	    Log.d(THIS_FILE, "Select buddies for account "+profileStatusSelected);
+	    // fallthrough
 	case BUDDIES:
 	    qb.setTables(SipProfile.BUDDIES_TABLE_NAME);
 	    if (sortOrder == null) {
@@ -598,7 +631,7 @@ public class DBProvider extends ContentProvider {
 	    break;
 	case MESSAGES:
 	    qb.setTables(SipMessage.MESSAGES_TABLE_NAME);
-	    if(sortOrder == null) {
+	    if (sortOrder == null) {
 		finalSortOrder = SipMessage.FIELD_DATE + " DESC";
 	    }
 	    break;
@@ -609,7 +642,7 @@ public class DBProvider extends ContentProvider {
 	    break;
 	case THREADS:
 	    qb.setTables(SipMessage.MESSAGES_TABLE_NAME);
-	    if(sortOrder == null) {
+	    if (sortOrder == null) {
 		finalSortOrder = SipMessage.FIELD_DATE + " DESC";
 	    }
 	    projection = new String[]{
@@ -636,7 +669,7 @@ public class DBProvider extends ContentProvider {
 	    break;
 	case THREADS_ID:
 	    qb.setTables(SipMessage.MESSAGES_TABLE_NAME);
-	    if(sortOrder == null) {
+	    if (sortOrder == null) {
 		finalSortOrder = SipMessage.FIELD_DATE + " DESC";
 	    }
 	    projection = new String[]{
@@ -680,15 +713,25 @@ public class DBProvider extends ContentProvider {
 	    }
 	    c.setNotificationUri(getContext().getContentResolver(), uri);
 	    return c;
+	case ACCOUNT_STATUS_SELECTED:
+	    synchronized (profilesStatus) {
+		ContentValues cv = new ContentValues();
+		cv.put(SipProfile.FIELD_ACCOUNT, profileStatusSelected);
+		c = getCursor(new ContentValues[] {cv});
+	    }
+	    c.setNotificationUri(getContext().getContentResolver(), uri);
+	    return c;
 	case BUDDIES_STATUS:
 	    synchronized (buddiesStatus) {
-		ContentValues[] cvs = new ContentValues[buddiesStatus.size()];
+		int sz = buddiesStatus.size();
+		ContentValues[] cvs = new ContentValues[sz];
 		int i = 0;
 		for (ContentValues  ps : buddiesStatus.values()) {
 		    cvs[i] = ps;
 		    i++;
 		}
 		c = getCursor(cvs);
+		Log.d(THIS_FILE, "buddies status "+sz);
 	    }
 	    if(c != null) {
 		c.setNotificationUri(getContext().getContentResolver(), uri);
@@ -721,7 +764,7 @@ public class DBProvider extends ContentProvider {
     @Override
     public int update(Uri uri, ContentValues values, String where, String[] whereArgs) {
 	SQLiteDatabase db = mOpenHelper.getWritableDatabase();
-        int count;
+        int count = 0;
         String finalWhere;
         int matched = URI_MATCHER.match(uri);
 	
@@ -738,7 +781,7 @@ public class DBProvider extends ContentProvider {
 	    break;
 	case BUDDIES:
 	case BUDDIES_ID:
-	    finalWhere = DatabaseUtilsCompat.concatenateWhere(SipProfile.FIELD_ID + " = " + ContentUris.parseId(uri), where);
+	    finalWhere = DatabaseUtilsCompat.concatenateWhere(SipProfile._ID + "=" + ContentUris.parseId(uri), where);
 	    count = db.update(SipProfile.BUDDIES_TABLE_NAME, values, finalWhere, whereArgs);
 	    break;
 	case CALLLOGS:
@@ -776,6 +819,55 @@ public class DBProvider extends ContentProvider {
 		    cv.put(SipProfileState.ACCOUNT_ID, id);
 		    profilesStatus.put(id, cv);
 		    Log.d(THIS_FILE, "Updated "+cv);
+		}
+		count = 1;
+	    } break;
+	case ACCOUNT_STATUS_SELECTED:
+	    if (values.containsKey(SipProfile.FIELD_ACCOUNT)) {
+		long id = values.getAsLong(SipProfile.FIELD_ACCOUNT);
+		synchronized (profilesStatus) {
+		    if (profileStatusSelected != id && profilesStatus.containsKey(id)) {
+			profileStatusSelected = id;
+			getContext().getContentResolver().notifyChange(uri, null);
+			Log.d(THIS_FILE, "Updated (select:"+profileStatusSelected+"), "+values);
+			return 1;
+		    }
+		    return 0;
+		}
+	    } break; 
+	case BUDDIES_STATUS:
+	    {
+		//Log.d(THIS_FILE, "update buddy status: "+values);
+		final BuddyState bs = new BuddyState();
+		bs.createFromValues(values);
+
+		Cursor c = db.query(SipProfile.BUDDIES_TABLE_NAME, new String[]{
+			SipProfile._ID, SipProfile.FIELD_ACCOUNT, SipProfile.FIELD_CONTACT,
+		    }, SipProfile.FIELD_ACCOUNT+"=? AND "+SipProfile.FIELD_CONTACT+"=?", new String[]{
+			""+profileStatusSelected, bs.contact,
+		    }, null, null, null);
+
+		c.moveToFirst();
+
+		ContentValues v = new ContentValues();
+		try {
+		    DatabaseUtils.cursorRowToContentValues(c, v);
+		} catch (Exception e) {
+		    Log.e(THIS_FILE, "can't update buddy status", e);
+		}
+		//Log.d(THIS_FILE, "update buddy status: "+c.getCount()+", "+v);
+		c.close();
+
+		long id = v.getAsLong(SipProfile._ID);
+		synchronized (buddiesStatus) {
+		    if (buddiesStatus.containsKey(id)) {
+			bs.createFromValues(buddiesStatus.get(id));
+		    }
+		    bs.createFromValues(values);
+		    final ContentValues cv = bs.getAsValues();
+		    cv.put(BuddyState.BUDDY_ID, id);
+		    buddiesStatus.put(id, cv);
+		    Log.d(THIS_FILE, "Updated buddy status: "+cv);
 		}
 		count = 1;
 	    } break;
@@ -912,6 +1004,7 @@ public class DBProvider extends ContentProvider {
 	    break;
 	case BUDDIES:
 	case BUDDIES_ID:
+	case BUDDIES_SELECTED:
 	    possibles = Arrays.asList(BUDDY_FULL_PROJECTION);
 	    break;
 	case CALLLOGS:
@@ -932,6 +1025,7 @@ public class DBProvider extends ContentProvider {
 	    break;
 	case ACCOUNTS_STATUS:
 	case ACCOUNTS_STATUS_ID:
+	case ACCOUNT_STATUS_SELECTED:
 	case BUDDIES_STATUS:
 	case BUDDIES_STATUS_ID:
 	    possibles = new ArrayList<String>();
@@ -943,7 +1037,7 @@ public class DBProvider extends ContentProvider {
     private static void checkSelection(List<String> possibles, String selection) {
         if (selection != null) {
             String cleanSelection = selection.toLowerCase();
-            for(String field : possibles) {
+            for (String field : possibles) {
                 cleanSelection = cleanSelection.replace(field, "");
             }
             cleanSelection = cleanSelection.replaceAll(" in \\([0-9 ,]+\\)", "");

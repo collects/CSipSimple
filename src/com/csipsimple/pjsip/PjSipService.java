@@ -1456,7 +1456,7 @@ public class PjSipService {
      * @throws SameThreadException
      */
     public int addBuddy(String buddyUri) throws SameThreadException {
-	Log.d(THIS_FILE, "addBuddy: buddyUri="+buddyUri);
+	Log.d(THIS_FILE, "addBuddy: "+buddyUri);
 
         if (!created) {
             return -1;
