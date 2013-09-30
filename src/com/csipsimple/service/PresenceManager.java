@@ -97,7 +97,7 @@ public class PresenceManager
      * @param acc the profile to search in
      * @return a list of sip uris
      */
-    private synchronized List<String> getBuddiesForAccount(SipProfile acc){
+    private synchronized List<String> getBuddiesForAccount(SipProfile acc) {
         if(service != null) {
             List<String> buddies = ContactsWrapper.getInstance().getCSipPhonesByGroup(service, acc.display_name);
 	    if (buddies == null) buddies = new ArrayList<String>();
@@ -300,7 +300,7 @@ public class PresenceManager
 		BuddyState bs = new BuddyState();
 		String s = buddyUri.replace("sip:", "");
 		bs.id = buddyId;
-		bs.uri = buddyUri; //.replace("sip:", "");
+		bs.uri = buddyUri;
 		bs.contact = s.substring(0, s.indexOf("@"));
 		bs.status = presStatus.ordinal();
 		bs.status_text = statusText;

@@ -243,8 +243,7 @@ public class SipService extends Service {
 		    }
 		}
 		getExecutor().execute(new SipRunnable() {
-			@Override
-			    protected void doRun() throws SameThreadException {
+			@Override protected void doRun() throws SameThreadException {
 			    pjService.makeCall(callee, accountId, options);
 			}
 		    });
@@ -260,8 +259,7 @@ public class SipService extends Service {
 		SipService.this.startService(new Intent(SipService.this, SipService.class));
 
 		getExecutor().execute(new SipRunnable() {
-			@Override
-			    protected void doRun() throws SameThreadException {
+			@Override protected void doRun() throws SameThreadException {
 			    Log.d(THIS_FILE, "will sms " + callee);
 			    if(pjService != null) {
 				ToCall called = pjService.sendMessage(callee, message, accountId);
@@ -290,8 +288,7 @@ public class SipService extends Service {
 	    @Override public int answer(final int callId, final int status) throws RemoteException {
 		SipService.this.enforceCallingOrSelfPermission(SipManager.PERMISSION_USE_SIP, null);
 		ReturnRunnable action = new ReturnRunnable() {
-			@Override
-			    protected Object runWithReturn() throws SameThreadException {
+			@Override protected Object runWithReturn() throws SameThreadException {
 			    return (Integer) pjService.callAnswer(callId, status);
 			}
 		    };
@@ -307,8 +304,7 @@ public class SipService extends Service {
 	    @Override public int hangup(final int callId, final int status) throws RemoteException {
 		SipService.this.enforceCallingOrSelfPermission(SipManager.PERMISSION_USE_SIP, null);
 		ReturnRunnable action = new ReturnRunnable() {
-			@Override
-			    protected Object runWithReturn() throws SameThreadException {
+			@Override protected Object runWithReturn() throws SameThreadException {
 			    return (Integer) pjService.callHangup(callId, status);
 			}
 		    };
@@ -325,8 +321,7 @@ public class SipService extends Service {
 		SipService.this.enforceCallingOrSelfPermission(SipManager.PERMISSION_USE_SIP, null);
 		Log.d(THIS_FILE, "XFER");
 		ReturnRunnable action = new ReturnRunnable() {
-			@Override
-			    protected Object runWithReturn() throws SameThreadException {
+			@Override protected Object runWithReturn() throws SameThreadException {
 			    return (Integer) pjService.callXfer(callId, callee);
 			}
 		    };
@@ -341,8 +336,7 @@ public class SipService extends Service {
 		SipService.this.enforceCallingOrSelfPermission(SipManager.PERMISSION_USE_SIP, null);
 		Log.d(THIS_FILE, "XFER-replace");
 		ReturnRunnable action = new ReturnRunnable() {
-			@Override
-			    protected Object runWithReturn() throws SameThreadException {
+			@Override protected Object runWithReturn() throws SameThreadException {
 			    return (Integer) pjService.callXferReplace(callId, otherCallId, options);
 			}
 		    };
@@ -353,8 +347,7 @@ public class SipService extends Service {
 	    /**
 	     * {@inheritDoc}
 	     */
-	    @Override
-		public int sendDtmf(final int callId, final int keyCode) throws RemoteException {
+	    @Override public int sendDtmf(final int callId, final int keyCode) throws RemoteException {
 		SipService.this.enforceCallingOrSelfPermission(SipManager.PERMISSION_USE_SIP, null);
 
 		ReturnRunnable action = new ReturnRunnable() {
@@ -530,8 +523,7 @@ public class SipService extends Service {
 		    return;
 		}
 		getExecutor().execute(new SipRunnable() {
-			@Override
-			    protected void doRun() throws SameThreadException {
+			@Override protected void doRun() throws SameThreadException {
 			    pjService.setEchoCancellation(on);
 			}
 		    });
@@ -546,8 +538,7 @@ public class SipService extends Service {
 		    return;
 		}
 		getExecutor().execute(new SipRunnable() {
-			@Override
-			    protected void doRun() throws SameThreadException {
+			@Override protected void doRun() throws SameThreadException {
 			    pjService.startRecording(callId, way);
 			}
 		    });
@@ -562,8 +553,7 @@ public class SipService extends Service {
 		    return;
 		}
 		getExecutor().execute(new SipRunnable() {
-			@Override
-			    protected void doRun() throws SameThreadException {
+			@Override protected void doRun() throws SameThreadException {
 			    pjService.stopRecording(callId);
 			}
 		    });
@@ -605,8 +595,7 @@ public class SipService extends Service {
 		    return;
 		}
 		getExecutor().execute(new SipRunnable() {
-			@Override
-			    protected void doRun() throws SameThreadException {
+			@Override protected void doRun() throws SameThreadException {
 			    pjService.playWaveFile(filePath, callId, way);
 			}
 		    });
@@ -690,8 +679,7 @@ public class SipService extends Service {
 	     */
 	    @Override public String showCallInfosDialog(final int callId) throws RemoteException {
 		ReturnRunnable action = new ReturnRunnable() {
-			@Override
-			    protected Object runWithReturn() throws SameThreadException {
+			@Override protected Object runWithReturn() throws SameThreadException {
 			    String infos = PjSipCalls.dumpCallInfo(callId);
 			    Log.d(THIS_FILE, infos);
 			    return infos;
@@ -710,9 +698,7 @@ public class SipService extends Service {
 		    return SipManager.ERROR_CURRENT_NETWORK;
 		}
 		SipRunnable action = new SipRunnable() {
-				
-			@Override
-			    protected void doRun() throws SameThreadException {
+			@Override protected void doRun() throws SameThreadException {
 			    pjsua.conf_connect(0, 0);
 			}
 		    };
@@ -729,9 +715,7 @@ public class SipService extends Service {
 		    return SipManager.ERROR_CURRENT_NETWORK;
 		}
 		SipRunnable action = new SipRunnable() {
-				
-			@Override
-			    protected void doRun() throws SameThreadException {
+			@Override protected void doRun() throws SameThreadException {
 			    pjsua.conf_disconnect(0, 0);
 			}
 		    };
@@ -745,8 +729,7 @@ public class SipService extends Service {
 	     */
 	    @Override public long confGetRxTxLevel(final int port) throws RemoteException {
 		ReturnRunnable action = new ReturnRunnable() {
-			@Override
-			    protected Object runWithReturn() throws SameThreadException {
+			@Override protected Object runWithReturn() throws SameThreadException {
 			    return (Long) pjService.getRxTxLevel(port);
 			}
 		    };
@@ -763,8 +746,7 @@ public class SipService extends Service {
 
 	    @Override public void updateCallOptions(final int callId, final Bundle options) throws RemoteException {
 		getExecutor().execute(new SipRunnable() {
-			@Override
-			    protected void doRun() throws SameThreadException {
+			@Override protected void doRun() throws SameThreadException {
 			    pjService.updateCallOptions(callId, options);
 			}
 		    });
@@ -895,8 +877,7 @@ public class SipService extends Service {
 	}
     }
 
-    @Override
-	public void onCreate() {
+    @Override public void onCreate() {
 	super.onCreate();
 	singleton = this;
 
@@ -921,13 +902,9 @@ public class SipService extends Service {
 	    Log.e(THIS_FILE, "RESET SETTINGS !!!!");
 	    prefsWrapper.resetAllDefaultValues();
 	}
-
-
-
     }
 
-    @Override
-	public void onDestroy() {
+    @Override public void onDestroy() {
 	super.onDestroy();
 	Log.i(THIS_FILE, "Destroying SIP Service");
 	unregisterBroadcasts();
@@ -1025,7 +1002,7 @@ public class SipService extends Service {
 	}
 	if (statusObserverBuddy == null) {
 	    statusObserverBuddy = new BuddyStatusContentObserver(serviceHandler);
-	    getContentResolver().registerContentObserver(SipProfile.BUDDY_STATUS_URI, true, statusObserverBuddy);
+	    getContentResolver().registerContentObserver(SipProfile.BUDDY_URI, true, statusObserverBuddy);
 	}
     }
 
@@ -1113,7 +1090,6 @@ public class SipService extends Service {
 	  }
 	*/
     }
-	
 	
     private List<ComponentName> activitiesForOutgoing = new ArrayList<ComponentName>();
     private List<ComponentName> deferedUnregisterForOutgoing = new ArrayList<ComponentName>();
@@ -1481,19 +1457,28 @@ public class SipService extends Service {
 
     private synchronized void updateBuddiesState() {
 	Log.d(THIS_FILE, "Update buddies state");
-	/*
-	final Cursor c = getContentResolver().query(SipProfile.BUDDY_STATUS_URI, null, null, null, null);
+	final Cursor c = getContentResolver().query(SipProfile.BUDDY_URI, null, null, null, null);
 	getExecutor().execute(new SipRunnable() { @Override protected void doRun() throws SameThreadException {
-	    while (c.moveToNext()) {
+	    if (c.moveToFirst()) do {
 		final ContentValues v = new ContentValues();
+		final ContentValues vv = new ContentValues();
 		DatabaseUtils.cursorRowToContentValues(c, v);
-		final String s = v.getAsString(SipProfile.FIELD_URI);
-		addBuddy("sip:" + s);
-		Log.d(THIS_FILE, "updateBuddiesState: add: "+s);
-	    }
+		final Cursor cc = getContentResolver().query(ContentUris.withAppendedId(SipProfile.ACCOUNT_ID_URI_BASE, v.getAsLong(SipProfile.FIELD_ACCOUNT)), new String[]{SipProfile.FIELD_REG_URI}, null, null, null);
+		//Log.d(THIS_FILE, "add state: "+v+", "+cc.getCount());
+		if (cc.moveToFirst()) {
+		    DatabaseUtils.cursorRowToContentValues(cc, vv);
+		    cc.close();
+		    Log.d(THIS_FILE, "add state: "+v+", "+vv);
+		    final String s = "sip:" + v.getAsString(SipProfile.FIELD_CONTACT) + "@" +
+			vv.getAsString(SipProfile.FIELD_REG_URI).replace("sip:", "");
+		    removeBuddy(s);
+		    getExecutor().execute(new SipRunnable() { @Override protected void doRun() throws SameThreadException {
+			addBuddy(s);
+		    }});
+		}
+	    } while (c.moveToNext());
 	    c.close();
 	}});
-	*/
     }
 	
     /**
