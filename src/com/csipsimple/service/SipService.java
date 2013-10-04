@@ -88,6 +88,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.Semaphore;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -100,6 +101,8 @@ public class SipService extends Service {
     private SipWakeLock sipWakeLock;
     private boolean autoAcceptCurrent = false;
     public boolean supportMultipleCalls = false;
+
+    private final HashMap<String, ContentValues> buddies = new HashMap<String, ContentValues>();
 	
     // For video testing -- TODO : remove
     private static SipService singleton = null;
@@ -1394,7 +1397,7 @@ public class SipService extends Service {
 		
 	if (hasSomeActiveAccount) {
 	    acquireResources();
-	    //updateBuddies();
+	    updateBuddies();
 	} else {
 	    releaseResources();
 	}
@@ -1447,7 +1450,7 @@ public class SipService extends Service {
 		    DatabaseUtils.cursorRowToContentValues(cc, v);
 		    String s = v.getAsString(SipProfile.FIELD_CONTACT);
 		    String u = "sip:"+s+"@"+srv;
-		    //addBuddy(u);
+		    buddies.put(u, v); //addBuddy(u);
 		    Log.d(THIS_FILE, "selected: "+u+", "+v);
 		}
 		cc.close();
@@ -1458,7 +1461,19 @@ public class SipService extends Service {
     private synchronized void updateBuddiesState() {
 	Log.d(THIS_FILE, "Update buddies state");
 	final Cursor c = getContentResolver().query(SipProfile.BUDDY_URI, null, null, null, null);
+	/*
+	final Cursor c2 = getContentResolver().query(SipProfile.BUDDY_STATUS_URI, null, null, null, null);
+	final int[] ids = pjService.getBuddies();
+	final HashMap<String, Integer> a = new HashMap<String, Integer>();
+	final HashMap<String, Integer> a2 = new HashMap<String, Integer>();
+	for (int n=0; n < ids.length; ++n) {
+	    String s = pjService.getBuddyContact(ids[n]);
+	    a.put(s, ids[n]);
+	    Log.d(THIS_FILE, "found: "+ids[n]+", "+s);
+	}
+	*/
 	getExecutor().execute(new SipRunnable() { @Override protected void doRun() throws SameThreadException {
+	    final HashMap<String, ContentValues> newBuddies = new HashMap<String, ContentValues>();
 	    if (c.moveToFirst()) do {
 		final ContentValues v = new ContentValues();
 		final ContentValues vv = new ContentValues();
@@ -1468,16 +1483,70 @@ public class SipService extends Service {
 		if (cc.moveToFirst()) {
 		    DatabaseUtils.cursorRowToContentValues(cc, vv);
 		    cc.close();
-		    Log.d(THIS_FILE, "add state: "+v+", "+vv);
 		    final String s = "sip:" + v.getAsString(SipProfile.FIELD_CONTACT) + "@" +
 			vv.getAsString(SipProfile.FIELD_REG_URI).replace("sip:", "");
-		    removeBuddy(s);
-		    getExecutor().execute(new SipRunnable() { @Override protected void doRun() throws SameThreadException {
-			addBuddy(s);
-		    }});
+		    if (!buddies.containsKey(s)) {
+			Log.d(THIS_FILE, "add state: "+s+", "+v+", "+vv);
+			buddies.put(s, v);
+			getExecutor().execute(new SipRunnable() { @Override protected void doRun() throws SameThreadException {
+			    pjService.updateBuddy(addBuddy(s));
+			}});
+		    } else {
+			//final int i = pjService.findBuddy(s);
+			//pjService.updateBuddy(i);
+			buddies.put(s, v);
+		    }
+		    newBuddies.put(s, v);
+		    /*
+		    final int i = pjService.findBuddy(s);
+		    if (0 <= i) {
+			Log.d(THIS_FILE, "update state: "+i+", "+v+", "+vv);
+			//pjService.updateBuddy(i);
+			getExecutor().execute(new SipRunnable() { @Override protected void doRun() throws SameThreadException {
+			    pjService.updateBuddy(i); //pjService.updateBuddy(addBuddy(s));
+			}});
+		    } else {
+			Log.d(THIS_FILE, "add state: "+v+", "+vv);
+			getExecutor().execute(new SipRunnable() { @Override protected void doRun() throws SameThreadException {
+			    pjService.updateBuddy(addBuddy(s));
+			}});
+		    }
+		    a2.put(s, i);
+		    */
 		}
 	    } while (c.moveToNext());
+	    for (String s : buddies.keySet()) {
+		if (!newBuddies.containsKey(s)) {
+		    final ContentValues v = buddies.get(s);
+		    /*
+		    final ContentValues vv = new ContentValues();
+		    DatabaseUtils.cursorRowToContentValues(c, v);
+		    Cursor cc = getContentResolver().query(ContentUris.withAppendedId(SipProfile.ACCOUNT_ID_URI_BASE, v.getAsLong(SipProfile.FIELD_ACCOUNT)), new String[]{SipProfile.FIELD_REG_URI}, null, null, null);
+		    if (cc.moveToFirst()) {
+			DatabaseUtils.cursorRowToContentValues(cc, vv);
+			cc.close();
+			final String s = "sip:" + v.getAsString(SipProfile.FIELD_CONTACT) + "@" +
+			    vv.getAsString(SipProfile.FIELD_REG_URI).replace("sip:", "");
+			Log.d(THIS_FILE, "remove buddy: "+v);
+			removeBuddy(s);
+		    }
+		    */
+		    buddies.remove(s);
+		    removeBuddy(s);
+		    Log.d(THIS_FILE, "removed state: "+s+", "+v);
+		}
+	    }
+	    /*
+	    if (c2.moveToFirst()) do {
+		final ContentValues v = new ContentValues();
+		DatabaseUtils.cursorRowToContentValues(c2, v);
+		int i = pjService.findBuddy(v.getAsString(SipProfile.FIELD_URI));
+		Log.d(THIS_FILE, "check remove: "+v);
+	    } while (c2.moveToNext());
+	    */
 	    c.close();
+	    //c2.close();
+	    newBuddies.clear();
 	}});
     }
 	
@@ -1520,9 +1589,9 @@ public class SipService extends Service {
     public int getBuddies(/*long accountId*/) throws SameThreadException {
 	Log.d(THIS_FILE, "getBuddies: "+pjService);
         int retVal = -1;
-        if(pjService != null) {
+        if (pjService != null) {
             //Log.d(THIS_FILE, "Trying to add buddy " + buddyUri);
-            retVal = pjService.getBuddies();
+            //retVal = pjService.getBuddies();
         }
         return retVal;
     }

@@ -92,6 +92,7 @@ import org.pjsip.pjsua.pjsua_logging_config;
 import org.pjsip.pjsua.pjsua_media_config;
 import org.pjsip.pjsua.pjsua_msg_data;
 import org.pjsip.pjsua.pjsua_transport_config;
+import org.pjsip.pjsua.pjsua_buddy_info;
 
 import java.io.File;
 import java.io.IOException;
@@ -1438,15 +1439,13 @@ public class PjSipService {
         return toCall;
     }
 
-    public int getBuddies() {
+    public int[] getBuddies() {
 	int num = (int) pjsua.get_buddy_count();
 	int[] ids = new int[num];
 	long[] count = new long[1];
 	pjsua.enum_buddies(ids, count);
-
-	Log.d(THIS_FILE, "getBuddies: num="+num+", "+ids.length+", "+count[0]);
-
-	return (int) count[0];
+	//Log.d(THIS_FILE, "getBuddies: num="+num+", "+ids.length+", "+count[0]);
+	return ids; //(int) count[0];
     }
 
     /**
@@ -1487,6 +1486,32 @@ public class PjSipService {
         if (buddyId >= 0) {
             pjsua.buddy_del(buddyId);
         }
+    }
+
+    public int findBuddy(String buddyUri) throws SameThreadException {
+	return pjsua.buddy_find(pjsua.pj_str_copy(buddyUri));
+    }
+
+    public int getBuddyInfo(int buddy_id) {
+	pjsua_buddy_info info = new pjsua_buddy_info();
+	int res = pjsua.buddy_get_info(buddy_id, info);
+	// ...
+	info.delete();
+	return res;
+    }
+
+    public String getBuddyContact(int buddy_id) {
+	pjsua_buddy_info info = new pjsua_buddy_info();
+	int res = pjsua.buddy_get_info(buddy_id, info);
+	pj_str_t contact = info.getContact();
+	String s = pjStrToString(contact);
+	info.delete();
+	contact.delete();
+	return s;
+    }
+
+    public int updateBuddy(int buddyId) {
+	return pjsua.buddy_update_pres(buddyId);
     }
 
     public void sendPendingDtmf(int callId) throws SameThreadException {

@@ -858,18 +858,22 @@ public class DBProvider extends ContentProvider {
 		//Log.d(THIS_FILE, "update buddy status: "+c.getCount()+", "+v);
 		c.close();
 
-		long id = v.getAsLong(SipProfile._ID);
-		synchronized (buddiesStatus) {
-		    if (buddiesStatus.containsKey(id)) {
-			bs.createFromValues(buddiesStatus.get(id));
+		try {
+		    long id = v.getAsLong(SipProfile._ID);
+		    synchronized (buddiesStatus) {
+			if (buddiesStatus.containsKey(id)) {
+			    bs.createFromValues(buddiesStatus.get(id));
+			}
+			bs.createFromValues(values);
+			final ContentValues cv = bs.getAsValues();
+			cv.put(BuddyState.BUDDY_ID, id);
+			buddiesStatus.put(id, cv);
+			Log.d(THIS_FILE, "Updated buddy status: "+cv);
 		    }
-		    bs.createFromValues(values);
-		    final ContentValues cv = bs.getAsValues();
-		    cv.put(BuddyState.BUDDY_ID, id);
-		    buddiesStatus.put(id, cv);
-		    Log.d(THIS_FILE, "Updated buddy status: "+cv);
+		    count = 1;
+		} catch (Exception e) {
+		    Log.e(THIS_FILE, "Can't update buddy status", e);
 		}
-		count = 1;
 	    } break;
 	case BUDDIES_STATUS_ID:
 	    {
