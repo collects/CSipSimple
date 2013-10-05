@@ -19,45 +19,31 @@
  *  along with CSipSimple.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.csipsimple.widgets;
+package com.csipsimple.wizards.impl;
 
-import android.content.Context;
-import android.util.AttributeSet;
-import android.view.View;
-import android.widget.SlidingDrawer;
+import android.text.InputType;
 
+import com.csipsimple.api.SipProfile;
 
-public class SlidingPanel extends SlidingDrawer {
+public class UkrCall extends SimpleImplementation {
 	
-
-	public SlidingPanel(Context context, AttributeSet attrs) {
-		super(context, attrs);
-	}
-
 	@Override
-	protected void onLayout(boolean changed, int l, int t, int r, int b) {
-		super.onLayout(changed, l, t, r, b);
-		//Relayout handle
-		final int width = r - l;
-		final int height = b - t;
+	protected String getDomain() {
+		return "ukrcall.daktela.com";
+	}
+	
+	@Override
+	protected String getDefaultName() {
+		return "UkrCall.net";
+	}
+	
+	//Customization
+	@Override
+	public void fillLayout(final SipProfile account) {
+		super.fillLayout(account);
 		
-		
-		final View handle = getHandle();
-		
-		int childWidth = handle.getMeasuredWidth();
-		int childHeight = handle.getMeasuredHeight();
-		
-		int childLeft;
-		int childTop;
-		
-		
-		float density = getContent().getResources().getDisplayMetrics().density;
-		
-		childLeft = isOpened() ? 0 : width - childWidth;
-		childTop = (height - childHeight - (int) (12 *  density) );
-		
-		handle.layout(childLeft, childTop, childLeft + childWidth, childTop + childHeight);
-		
+		accountUsername.getEditText().setInputType(InputType.TYPE_CLASS_PHONE);
 		
 	}
+	
 }

@@ -146,6 +146,7 @@ public final class Compatibility {
                 android.os.Build.DEVICE.equalsIgnoreCase("U8110") ||
                 android.os.Build.DEVICE.equalsIgnoreCase("U8120") ||
                 android.os.Build.DEVICE.equalsIgnoreCase("U8100") ||
+                android.os.Build.DEVICE.toUpperCase().startsWith("U8836") ||
                 android.os.Build.PRODUCT.equalsIgnoreCase("U8655")) {
             return true;
         }
@@ -457,11 +458,15 @@ public final class Compatibility {
         preferencesWrapper.setCodecPriority("ISAC/32000/1", SipConfigManager.CODEC_NB, "0");
         preferencesWrapper.setCodecPriority("AMR/8000/1", SipConfigManager.CODEC_NB, "0");
         preferencesWrapper.setCodecPriority("AMR-WB/16000/1", SipConfigManager.CODEC_NB, "0");
+        preferencesWrapper.setCodecPriority("opus/8000/1", SipConfigManager.CODEC_NB, "0");
+        preferencesWrapper.setCodecPriority("opus/16000/1", SipConfigManager.CODEC_NB, "0");
+        preferencesWrapper.setCodecPriority("opus/24000/1", SipConfigManager.CODEC_NB, "0");
         preferencesWrapper.setCodecPriority("opus/48000/1", SipConfigManager.CODEC_NB, "0");
         preferencesWrapper.setCodecPriority("G726-16/8000/1", SipConfigManager.CODEC_NB, "0");
         preferencesWrapper.setCodecPriority("G726-24/8000/1", SipConfigManager.CODEC_NB, "0");
         preferencesWrapper.setCodecPriority("G726-32/8000/1", SipConfigManager.CODEC_NB, "0");
         preferencesWrapper.setCodecPriority("G726-40/8000/1", SipConfigManager.CODEC_NB, "0");
+        preferencesWrapper.setCodecPriority("mpeg4-generic/48000/1", SipConfigManager.CODEC_NB, "0");
 
         // For Wideband
         preferencesWrapper.setCodecPriority("PCMU/8000/1", SipConfigManager.CODEC_WB, "60");
@@ -487,11 +492,15 @@ public final class Compatibility {
         preferencesWrapper.setCodecPriority("ISAC/32000/1", SipConfigManager.CODEC_WB, "0");
         preferencesWrapper.setCodecPriority("AMR/8000/1", SipConfigManager.CODEC_WB, "0");
         preferencesWrapper.setCodecPriority("AMR-WB/16000/1", SipConfigManager.CODEC_WB, "0");
+        preferencesWrapper.setCodecPriority("opus/8000/1", SipConfigManager.CODEC_WB, "0");
+        preferencesWrapper.setCodecPriority("opus/16000/1", SipConfigManager.CODEC_WB, "0");
+        preferencesWrapper.setCodecPriority("opus/24000/1", SipConfigManager.CODEC_WB, "0");
         preferencesWrapper.setCodecPriority("opus/48000/1", SipConfigManager.CODEC_WB, "0");
         preferencesWrapper.setCodecPriority("G726-16/8000/1", SipConfigManager.CODEC_WB, "0");
         preferencesWrapper.setCodecPriority("G726-24/8000/1", SipConfigManager.CODEC_WB, "0");
         preferencesWrapper.setCodecPriority("G726-32/8000/1", SipConfigManager.CODEC_WB, "0");
         preferencesWrapper.setCodecPriority("G726-40/8000/1", SipConfigManager.CODEC_WB, "0");
+        preferencesWrapper.setCodecPriority("mpeg4-generic/48000/1", SipConfigManager.CODEC_WB, "0");
 
         // Bands repartition
         preferencesWrapper.setPreferenceStringValue("band_for_wifi", SipConfigManager.CODEC_WB);
@@ -560,9 +569,6 @@ public final class Compatibility {
                 needWebRTCImplementation());
         preferencesWrapper.setPreferenceBooleanValue(SipConfigManager.DO_FOCUS_AUDIO,
                 shouldFocusAudio());
-
-        preferencesWrapper.setPreferenceBooleanValue(SipConfigManager.USE_ALTERNATE_UNLOCKER,
-                isTabletScreen(preferencesWrapper.getContext()));
 
         boolean usePriviledged = shouldUsePriviledgedIntegration(preferencesWrapper.getContext());
         preferencesWrapper.setPreferenceBooleanValue(SipConfigManager.INTEGRATE_TEL_PRIVILEGED,
@@ -794,14 +800,6 @@ public final class Compatibility {
             prefWrapper.setPreferenceStringValue(SipConfigManager.TIMER_SESS_EXPIRES, "1800");
             resetCodecsSettings(prefWrapper);
         }
-        if (lastSeenVersion < 1142) {
-            prefWrapper.setPreferenceBooleanValue(SipConfigManager.USE_ALTERNATE_UNLOCKER,
-                    isTabletScreen(prefWrapper.getContext()));
-        }
-        if (lastSeenVersion < 1515) {
-            prefWrapper.setCodecPriority("opus/48000/1", SipConfigManager.CODEC_WB, "240");
-            prefWrapper.setCodecPriority("opus/48000/1", SipConfigManager.CODEC_NB, "240");
-        }
         if (lastSeenVersion < 1581 && needWebRTCImplementation()) {
             prefWrapper.setPreferenceBooleanValue(SipConfigManager.USE_WEBRTC_HACK,
                     needWebRTCImplementation());
@@ -870,12 +868,6 @@ public final class Compatibility {
             prefWrapper.setPreferenceStringValue(SipConfigManager.DTMF_PRESS_TONE_MODE,
                     Integer.toString(SipConfigManager.GENERIC_TYPE_PREVENT));
         }
-        if (lastSeenVersion < 2015) {
-            // By default disable opus for now as seems that the 48kHz
-            // resampling doesn't play well on all devices
-            prefWrapper.setCodecPriority("opus/48000/1", SipConfigManager.CODEC_NB, "0");
-            prefWrapper.setCodecPriority("opus/48000/1", SipConfigManager.CODEC_WB, "0");
-        }
         if (lastSeenVersion < 2030) {
             if ((android.os.Build.MODEL.toUpperCase().startsWith("LG-E720")
                     && !Compatibility.isCompatible(9))
@@ -932,6 +924,15 @@ public final class Compatibility {
         if (lastSeenVersion < 2254 && android.os.Build.MODEL.equalsIgnoreCase("XT320")) {
             prefWrapper.setPreferenceBooleanValue(SipConfigManager.KEEP_AWAKE_IN_CALL,
                     needPspWorkaround());
+        }
+        if (lastSeenVersion < 2297) {
+            prefWrapper.setPreferenceStringValue(SipConfigManager.UNLOCKER_TYPE, Integer.toString(SipConfigManager.GENERIC_TYPE_AUTO));
+        }
+        if (lastSeenVersion < 2302) {
+            if (android.os.Build.DEVICE.toUpperCase().startsWith("U8836")) {
+                prefWrapper.setPreferenceBooleanValue(SipConfigManager.USE_MODE_API,
+                        shouldUseModeApi());
+            }
         }
         prefWrapper.endEditing();
     }
