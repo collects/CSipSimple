@@ -101,7 +101,7 @@ public class PresenceManager
         if(service != null) {
             List<String> buddies = ContactsWrapper.getInstance().getCSipPhonesByGroup(service, acc.display_name);
 	    if (buddies == null) buddies = new ArrayList<String>();
-	    final Cursor c = service.getContentResolver().query(SipProfile.BUDDY_URI, BUD_PROJECTION, SipProfile.FIELD_ACCOUNT+"=?", new String[]{""+acc.id}, null);
+	    final Cursor c = acc.getBuddies(service, BUD_PROJECTION);
 	    Log.d(THIS_FILE, c.getCount() + " buddies of account " + acc.id);
 	    if (c != null && c.moveToFirst()) {
 		String u = acc.reg_uri;

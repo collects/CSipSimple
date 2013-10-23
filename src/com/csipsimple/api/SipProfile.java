@@ -226,6 +226,26 @@ public class SipProfile implements Parcelable {
 
     public static final String _ID = "_id";
 
+    public static final String[] BUDDY_FULL_PROJ = {
+	SipProfile.FIELD_ACCOUNT,
+	SipProfile.FIELD_CONTACT,
+	SipProfile.FIELD_DISPLAY_NAME,
+	SipProfile.FIELD_SUBSCRIBE,
+    };
+
+    public final static Class<?>[] BUDDY_FULL_PROJ_TYPES = {
+	Integer.class, String.class, String.class, Boolean.class,
+    };
+
+    public Cursor getBuddies(Context context) {
+	return getBuddies(context, BUDDY_FULL_PROJ);
+    }
+
+    public Cursor getBuddies(Context context, String[] projection) {
+	final Cursor c = context.getContentResolver().query(SipProfile.BUDDY_URI, projection, SipProfile.FIELD_ACCOUNT+"=?", new String[]{""+id}, null);
+	return c;
+    }
+
     // Fields for table accounts
     /**
      * Primary key identifier of the account in the database.

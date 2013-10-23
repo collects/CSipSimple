@@ -26,6 +26,7 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.text.format.DateFormat;
 
@@ -55,6 +56,7 @@ public final class SipProfileJson {
 
     private final static String THIS_FILE = "SipProfileJson";
     private final static String FILTER_KEY = "filters";
+    private final static String BUDDY_KEY = "buddies";
 
     private SipProfileJson() {
     }
@@ -74,9 +76,15 @@ public final class SipProfileJson {
         return cols.contentValueToJSON(cv);
     }
 
+    private static JSONObject serializeBuddyJSONObject(ContentValues cv) {
+        Columns cols = new Columns(SipProfile.BUDDY_FULL_PROJ, SipProfile.BUDDY_FULL_PROJ_TYPES);
+        return cols.contentValueToJSON(cv);
+    }
+
     public static JSONObject serializeSipProfile(Context context, SipProfile profile) {
         JSONObject jsonProfile = serializeBaseSipProfile(profile);
         JSONArray jsonFilters = new JSONArray();
+        JSONArray jsonBuddies = new JSONArray();
 
         Cursor c = Filter.getFiltersCursorForAccount(context, profile.id);
         int numRows = c.getCount();
@@ -92,10 +100,26 @@ public final class SipProfileJson {
         }
         c.close();
 
+	c = profile.getBuddies(context);
+	if (c != null && c.moveToFirst()) {
+	    int i = 0;
+	    do {
+		ContentValues v = new ContentValues();
+		DatabaseUtils.cursorRowToContentValues(c, v);
+		try {
+		    jsonBuddies.put(i++, serializeBuddyJSONObject(v));
+		} catch (JSONException e) {
+		    Log.e(THIS_FILE, "Impossible to add buddy", e);
+		}
+	    } while (c.moveToNext());
+	}
+	if (c != null) c.close();
+
         try {
             jsonProfile.put(FILTER_KEY, jsonFilters);
+            jsonProfile.put(BUDDY_KEY, jsonBuddies);
         } catch (JSONException e) {
-            Log.e(THIS_FILE, "Impossible to add fitlers", e);
+            Log.e(THIS_FILE, "impossible to add objects", e);
         }
 
         return jsonProfile;
@@ -224,6 +248,19 @@ public final class SipProfileJson {
                 cv = cols.jsonToContentValues(filterObj);
                 cv.put(Filter.FIELD_ACCOUNT, profileId);
                 cr.insert(SipManager.FILTER_URI, cv);
+            }
+        } catch (JSONException e) {
+            Log.e(THIS_FILE, "Error while restoring filters", e);
+        }
+
+	cols = new Columns(SipProfile.BUDDY_FULL_PROJ, SipProfile.BUDDY_FULL_PROJ_TYPES);
+        try {
+            JSONArray objs = jsonObj.getJSONArray(BUDDY_KEY);
+            for (int i = 0; i < objs.length(); i++) {
+                JSONObject obj = objs.getJSONObject(i);
+                cv = cols.jsonToContentValues(obj);
+                cv.put(Filter.FIELD_ACCOUNT, profileId);
+                cr.insert(SipProfile.BUDDY_URI, cv);
             }
         } catch (JSONException e) {
             Log.e(THIS_FILE, "Error while restoring filters", e);
