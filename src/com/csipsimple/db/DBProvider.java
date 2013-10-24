@@ -439,13 +439,11 @@ public class DBProvider extends ContentProvider {
 	case BUDDIES_ID:
 	    matchedTable = SipProfile.BUDDIES_TABLE_NAME;
 	    baseInsertedUri = SipProfile.BUDDY_ID_URI_BASE;
-	    if (profileStatusSelected == -1) {
-		Log.d(THIS_FILE, "can't add buddy "+values);
-		return uri;
-	    } else {
-		values.put(SipProfile.FIELD_ACCOUNT, profileStatusSelected);
+	    if (profileStatusSelected != -1) {
+		if (!values.containsKey(SipProfile.FIELD_ACCOUNT) || values.getAsInteger(SipProfile.FIELD_ACCOUNT) <= 0)
+		    values.put(SipProfile.FIELD_ACCOUNT, profileStatusSelected);
 	    }
-	    Log.d(THIS_FILE, "insert buddies "+values+", for account "+profileStatusSelected);
+	    Log.d(THIS_FILE, "insert buddies '"+values+"', for account "+profileStatusSelected);
 	    break;
 	case CALLLOGS:
 	case CALLLOGS_ID:

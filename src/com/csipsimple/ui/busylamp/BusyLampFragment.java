@@ -369,6 +369,7 @@ public class BusyLampFragment extends SherlockListFragment
 	    values.put(SipProfile.FIELD_CONTACT, number);
 	    values.put(SipProfile.FIELD_DISPLAY_NAME, name);
 	    values.put(SipProfile.FIELD_SUBSCRIBE, subscribe);
+	    // No ACCOUNT field for values!
 	    getActivity().getContentResolver().insert(SipProfile.BUDDY_URI, values);
 	} catch (Exception e) {
 	    Log.e(THIS_FILE, "can't add new buddy", e);
@@ -381,6 +382,7 @@ public class BusyLampFragment extends SherlockListFragment
 	    values.put(SipProfile.FIELD_CONTACT, number);
 	    values.put(SipProfile.FIELD_DISPLAY_NAME, name);
 	    values.put(SipProfile.FIELD_SUBSCRIBE, subscribe);
+	    // No ACCOUNT field for values!
 	    getActivity().getContentResolver().update(ContentUris.withAppendedId(SipProfile.BUDDY_ID_URI_BASE, id), values, null, null);
 	} catch (Exception e) {
 	    Log.e(THIS_FILE, "can't update buddy", e);

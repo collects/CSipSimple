@@ -56,7 +56,6 @@ public final class SipProfileJson {
 
     private final static String THIS_FILE = "SipProfileJson";
     private final static String FILTER_KEY = "filters";
-    private final static String BUDDY_KEY = "buddies";
 
     private SipProfileJson() {
     }
@@ -84,7 +83,6 @@ public final class SipProfileJson {
     public static JSONObject serializeSipProfile(Context context, SipProfile profile) {
         JSONObject jsonProfile = serializeBaseSipProfile(profile);
         JSONArray jsonFilters = new JSONArray();
-        JSONArray jsonBuddies = new JSONArray();
 
         Cursor c = Filter.getFiltersCursorForAccount(context, profile.id);
         int numRows = c.getCount();
@@ -100,24 +98,8 @@ public final class SipProfileJson {
         }
         c.close();
 
-	c = profile.getBuddies(context);
-	if (c != null && c.moveToFirst()) {
-	    int i = 0;
-	    do {
-		ContentValues v = new ContentValues();
-		DatabaseUtils.cursorRowToContentValues(c, v);
-		try {
-		    jsonBuddies.put(i++, serializeBuddyJSONObject(v));
-		} catch (JSONException e) {
-		    Log.e(THIS_FILE, "Impossible to add buddy", e);
-		}
-	    } while (c.moveToNext());
-	}
-	if (c != null) c.close();
-
         try {
             jsonProfile.put(FILTER_KEY, jsonFilters);
-            jsonProfile.put(BUDDY_KEY, jsonBuddies);
         } catch (JSONException e) {
             Log.e(THIS_FILE, "impossible to add objects", e);
         }
@@ -168,12 +150,29 @@ public final class SipProfileJson {
         return jsonSipProfiles;
     }
 
+    public static JSONArray serializeSipBuddies(Context context) {
+        final JSONArray jsonBuddies = new JSONArray();
+	final Cursor c = context.getContentResolver().query(SipProfile.BUDDY_URI, null, null, null, null);
+	if (c != null && c.moveToFirst()) {
+	    ContentValues cv;
+	    do {
+		cv = new ContentValues();
+		DatabaseUtils.cursorRowToContentValues(c, cv);
+		jsonBuddies.put(serializeBuddyJSONObject(cv));
+		Log.d(THIS_FILE, "save buddy: "+cv);
+	    } while (c.moveToNext());
+	}
+	if (c != null) c.close();
+	return jsonBuddies;
+    }
+
     public static JSONObject serializeSipSettings(Context ctxt) {
         PreferencesWrapper prefs = new PreferencesWrapper(ctxt);
         return prefs.serializeSipSettings();
     }
 
     private static final String KEY_ACCOUNTS = "accounts";
+    private final static String KEY_BUDDIES = "buddies";
     private static final String KEY_SETTINGS = "settings";
 
     /**
@@ -195,6 +194,11 @@ public final class SipProfileJson {
                 configChain.put(KEY_ACCOUNTS, serializeSipProfiles(ctxt));
             } catch (JSONException e) {
                 Log.e(THIS_FILE, "Impossible to add profiles", e);
+            }
+            try {
+                configChain.put(KEY_BUDDIES, serializeSipBuddies(ctxt));
+            } catch (JSONException e) {
+                Log.e(THIS_FILE, "Impossible to add buddies", e);
             }
             try {
                 configChain.put(KEY_SETTINGS, serializeSipSettings(ctxt));
@@ -253,19 +257,6 @@ public final class SipProfileJson {
             Log.e(THIS_FILE, "Error while restoring filters", e);
         }
 
-	cols = new Columns(SipProfile.BUDDY_FULL_PROJ, SipProfile.BUDDY_FULL_PROJ_TYPES);
-        try {
-            JSONArray objs = jsonObj.getJSONArray(BUDDY_KEY);
-            for (int i = 0; i < objs.length(); i++) {
-                JSONObject obj = objs.getJSONObject(i);
-                cv = cols.jsonToContentValues(obj);
-                cv.put(Filter.FIELD_ACCOUNT, profileId);
-                cr.insert(SipProfile.BUDDY_URI, cv);
-            }
-        } catch (JSONException e) {
-            Log.e(THIS_FILE, "Error while restoring filters", e);
-        }
-
         return false;
     }
 
@@ -304,6 +295,7 @@ public final class SipProfileJson {
         }
 
         JSONArray accounts = null;
+        JSONArray buddies = null;
         JSONObject settings = null;
         // Parse json if some string here
         if (contentBuf.length() > 0) {
@@ -311,6 +303,7 @@ public final class SipProfileJson {
                 JSONObject mainJSONObject = new JSONObject(contentBuf.toString());
                 // Retrieve accounts
                 accounts = mainJSONObject.getJSONArray(KEY_ACCOUNTS);
+                buddies = mainJSONObject.getJSONArray(KEY_BUDDIES);
                 // Retrieve settings
                 settings = mainJSONObject.getJSONObject(KEY_SETTINGS);
 
@@ -325,9 +318,13 @@ public final class SipProfileJson {
             restoreSipAccounts(ctxt, accounts);
         }
 
+	if (buddies != null && 0 < buddies.length()) {
+            restoreSipBuddies(ctxt, buddies);
+	}
+
         if (settings != null) {
             restoreSipSettings(ctxt, settings);
-            return true;
+	    return true;
         }
 
         return false;
@@ -347,6 +344,24 @@ public final class SipProfileJson {
             } catch (JSONException e) {
                 Log.e(THIS_FILE, "Unable to parse item " + i, e);
             }
+        }
+    }
+
+    public static void restoreSipBuddies(Context context, JSONArray buddies) {
+        ContentResolver cr = context.getContentResolver();
+        ContentValues cv;
+        Columns cols;
+	cols = new Columns(SipProfile.BUDDY_FULL_PROJ, SipProfile.BUDDY_FULL_PROJ_TYPES);
+        try {
+	    cr.delete(SipProfile.BUDDY_URI, null, null);
+            for (int i = 0; i < buddies.length(); i++) {
+                JSONObject obj = buddies.getJSONObject(i);
+                cv = cols.jsonToContentValues(obj);
+                Uri u = cr.insert(SipProfile.BUDDY_URI, cv);
+		Log.d(THIS_FILE, "restore buddy: "+u+", "+cv);
+            }
+        } catch (JSONException e) {
+            Log.e(THIS_FILE, "Error while restoring buddies", e);
         }
     }
 }
