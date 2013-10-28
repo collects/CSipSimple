@@ -129,9 +129,9 @@ public class SipNotifications {
 
 	// Foreground api
 
-	private static final Class<?>[] SET_FG_SIG = new Class[] { boolean.class };
-	private static final Class<?>[] START_FG_SIG = new Class[] { int.class, Notification.class };
-	private static final Class<?>[] STOP_FG_SIG = new Class[] { boolean.class };
+	private static final Class<?>[] SET_FG_SIG = new Class<?>[] { boolean.class };
+	private static final Class<?>[] START_FG_SIG = new Class<?>[] { int.class, Notification.class };
+	private static final Class<?>[] STOP_FG_SIG = new Class<?>[] { boolean.class };
 	private static final String THIS_FILE = "Notifications";
 
 	private Method mSetForeground;
