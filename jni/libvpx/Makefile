@@ -18,7 +18,7 @@ VPX_CONFIGURES := $(foreach TARGET, $(TARGETS),$(BUILD_DIRECTORY)/$(TARGET)/conf
 
 all : 
 	# For now we do nothing to build - it's made by android_toolchain
-	
+
 init : $(VPX_CONFIGURES)
 	# Preconfigure for each done
 
@@ -39,7 +39,7 @@ sources :
 	cd sources; \
 	git fetch --tags; \
 	git checkout origin; \
-	git checkout $(libvpx_tag);
+	git checkout $(libvpx_tag) -b $(libvpx_tag);
 
 
 update : sources
@@ -47,8 +47,8 @@ update : sources
 	git fetch --tags; \
 	git checkout origin; \
 	git checkout $(libvpx_tag);
-	
-	
+
+
 patch : .patched_sources
 	@# Patch done
 
@@ -58,6 +58,6 @@ patch : .patched_sources
 
 unpatch :
 	@if [ -f .patched_sources ]; then quilt pop -af; rm .patched_sources; fi;
-	
+
 clean :
 	@rm -rf $(BUILD_DIRECTORY)

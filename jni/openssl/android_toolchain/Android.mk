@@ -23,8 +23,8 @@ local_src_files := ec/ec2_mult.c \
 	ecdh/ech_key.c \
 	ecdh/ech_lib.c \
 	ecdh/ech_ossl.c 
-	
-	
+
+
 local_c_includes := \
 	$(LOCAL_PATH)/crypto \
 	$(LOCAL_PATH)/crypto/asn1 \

@@ -58,7 +58,7 @@ clean :
 	@if [ -f ffmpeg_src/config.mak ]; then $(MAKE) -C ffmpeg_src clean; fi;
 	@if [ -f x264_src/config.mak ]; then $(MAKE) -C x264_src clean; fi;
 	@if [ -d build ]; then rm -rf build; fi;
-	
+
 update : ffmpeg_src/VERSION
 	# FFmpeg
 	@cd ffmpeg_src; \
