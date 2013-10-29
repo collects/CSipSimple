@@ -1,0 +1,58 @@
+diff --git a/build/make/configure.sh b/build/make/configure.sh
+index f855db4..29fddc9 100755
+--- a/build/make/configure.sh
++++ b/build/make/configure.sh
+@@ -789,7 +789,7 @@ process_common_toolchain() {
+         android*)
+             TOOLCHAIN_PREFIX=arm-linux-androideabi-
+             SDK_PATH=${sdk_path}
+-            COMPILER_LOCATION=`find "${SDK_PATH}" \
++            COMPILER_LOCATION=`find "${SDK_PATH}/" \
+                                -name "${TOOLCHAIN_PREFIX}gcc*" -print -quit`
+             TOOLCHAIN_PATH=${COMPILER_LOCATION%/*}/${TOOLCHAIN_PREFIX}
+             CC=${TOOLCHAIN_PATH}gcc
+@@ -800,7 +800,7 @@ process_common_toolchain() {
+             NM=${TOOLCHAIN_PATH}nm
+ 
+             if [ -z "${alt_libc}" ]; then
+-                alt_libc=`find "${SDK_PATH}" -name arch-arm -print | \
++                alt_libc=`find "${SDK_PATH}/" -name arch-arm -print | \
+                           awk '{n = split($0,a,"/"); \
+                                 split(a[n-1],b,"-"); \
+                                 print $0 " " b[2]}' | \
+@@ -903,7 +903,7 @@ process_common_toolchain() {
+             android*)
+                 TOOLCHAIN_PREFIX=mipsel-linux-android-
+                 SDK_PATH=${sdk_path}
+-                COMPILER_LOCATION=`find "${SDK_PATH}" \
++                COMPILER_LOCATION=`find "${SDK_PATH}/" \
+                                    -name "${TOOLCHAIN_PREFIX}gcc*" -print -quit`
+                 TOOLCHAIN_PATH=${COMPILER_LOCATION%/*}/${TOOLCHAIN_PREFIX}
+                 CC=${TOOLCHAIN_PATH}gcc
+@@ -914,7 +914,7 @@ process_common_toolchain() {
+                 NM=${TOOLCHAIN_PATH}nm
+ 
+                 if [ -z "${alt_libc}" ]; then
+-                    alt_libc=`find "${SDK_PATH}" -name arch-mips -print | \
++                    alt_libc=`find "${SDK_PATH}/" -name arch-mips -print | \
+                               awk '{n = split($0,a,"/"); \
+                                     split(a[n-1],b,"-"); \
+                                     print $0 " " b[2]}' | \
+@@ -988,7 +988,7 @@ process_common_toolchain() {
+             android*)
+                 TOOLCHAIN_PREFIX=i686-linux-android-
+                 SDK_PATH=${sdk_path}
+-                COMPILER_LOCATION=`find "${SDK_PATH}" \
++                COMPILER_LOCATION=`find "${SDK_PATH}/" \
+                                    -name "${TOOLCHAIN_PREFIX}gcc*" -print -quit`
+                 TOOLCHAIN_PATH=${COMPILER_LOCATION%/*}/${TOOLCHAIN_PREFIX}
+                 CC=${TOOLCHAIN_PATH}gcc
+@@ -999,7 +999,7 @@ process_common_toolchain() {
+                 NM=${TOOLCHAIN_PATH}nm
+ 
+                 if [ -z "${alt_libc}" ]; then
+-                    alt_libc=`find "${SDK_PATH}" -name arch-x86 -print | \
++                    alt_libc=`find "${SDK_PATH}/" -name arch-x86 -print | \
+                               awk '{n = split($0,a,"/"); \
+                                     split(a[n-1],b,"-"); \
+                                     print $0 " " b[2]}' | \

@@ -1,2 +1,3 @@
 000toolchain_for_embedding.diff
 001toolchain_static_lib.diff
+002compiler_location_error.diff
