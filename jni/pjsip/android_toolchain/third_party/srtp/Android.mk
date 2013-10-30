@@ -15,7 +15,6 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../pjlib/include \
 
 
 
-$(warning $(PJLIB_SRC_DIR))
 LOCAL_CFLAGS := $(MY_PJSIP_FLAGS)
 PJLIB_SRC_DIR := .
 

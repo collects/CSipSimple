@@ -1,7 +1,7 @@
 diff --git a/build/make/configure.sh b/build/make/configure.sh
 index f855db4..29fddc9 100755
---- a/build/make/configure.sh
-+++ b/build/make/configure.sh
+--- libvpx.orig/sources/build/make/configure.sh
++++ libvpx/sources/build/make/configure.sh
 @@ -789,7 +789,7 @@ process_common_toolchain() {
          android*)
              TOOLCHAIN_PREFIX=arm-linux-androideabi-
