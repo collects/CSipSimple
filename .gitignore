@@ -29,7 +29,6 @@ jni/libvpx/sources/
 jni/openssl/sources/
 jni/opus/sources/
 jni/pjsip/sources/
-jni/pjsip_mod_checksync/
 jni/silk/sources/
 jni/third_party/libyuv/
 jni/webrtc/sources/

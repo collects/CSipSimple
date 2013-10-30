@@ -12,6 +12,7 @@ CSS_WRAPPER_ROOT_DIR := $(SWIG_GLUE_PATH)/../csipsimple-wrapper
 MOD_REGHANDLER_ROOT_DIR := $(SWIG_GLUE_PATH)/../pjsip_mod_reghandler
 MOD_SIPCLF_ROOT_DIR := $(SWIG_GLUE_PATH)/../pjsip_mod_sipclf
 MOD_EARLYLOCK_ROOT_DIR := $(SWIG_GLUE_PATH)/../pjsip_mod_earlylock
+MOD_CHECKSYNC_ROOT_DIR := $(SWIG_GLUE_PATH)/../pjsip_mod_checksync
 
 # For pjsua
 PJ_SWIG_HEADERS := $(PJ_ROOT_DIR)/pjsip/include/pjsua-lib/pjsua.h 
@@ -22,8 +23,9 @@ PJ_SWIG_HEADERS += $(CSS_WRAPPER_ROOT_DIR)/include/pjsua_jni_addons.h \
 	$(CSS_WRAPPER_ROOT_DIR)/include/csipsimple_codecs_utils.h  \
 	$(MOD_REGHANDLER_ROOT_DIR)/include/pjsip_mobile_reg_handler.h \
 	$(MOD_SIPCLF_ROOT_DIR)/include/pjsip_sipclf.h \
-	$(MOD_EARLYLOCK_ROOT_DIR)/include/pjsip_mod_earlylock.h
-	
+	$(MOD_EARLYLOCK_ROOT_DIR)/include/pjsip_mod_earlylock.h \
+	$(MOD_CHECKSYNC_ROOT_DIR)/include/pjsip_mod_checksync.h \
+
 SWIG_PYTHON_TOOLS := $(SWIG_GLUE_PATH)/clean_source_for_android.py \
 					$(SWIG_GLUE_PATH)/clean_callback_for_android.py \
 					$(SWIG_GLUE_PATH)/JavaJNI2CJNI_Load.py
@@ -37,8 +39,8 @@ INTERFACES_FILES := $(SWIG_GLUE_PATH)/generic_java.i \
 					$(MOD_REGHANDLER_ROOT_DIR)/include/mod_reghandler.i \
 					$(MOD_SIPCLF_ROOT_DIR)/include/mod_sipclf.i \
 					$(MOD_EARLYLOCK_ROOT_DIR)/include/mod_earlylock.i \
+					$(MOD_CHECKSYNC_ROOT_DIR)/include/mod_checksync.i \
 					$(CONCAT_PJSUA_FILE)
-					
 
 CONCAT_INTERFACE_FILE := $(SWIG_GLUE_PATH)/.interface.i
 
@@ -53,6 +55,7 @@ $(SWIG_GLUE_NATIVE_PATH)/$(SWIG_GLUE_NATIVE_FILE) :: $(CONCAT_INTERFACE_FILE) $(
 		-I$(MOD_REGHANDLER_ROOT_DIR)/include \
 		-I$(MOD_SIPCLF_ROOT_DIR)/include \
 		-I$(MOD_EARLYLOCK_ROOT_DIR)/include \
+		-I$(MOD_CHECKSYNC_ROOT_DIR)/include \
 		-o $@ \
 		-outdir $(JAVA_PACKAGE_DIR) -java -package $(JAVA_PACKAGE) \
 		-c++ $(CONCAT_INTERFACE_FILE)
@@ -117,6 +120,7 @@ LOCAL_C_INCLUDES += $(CSS_WRAPPER_ROOT_DIR)/include
 LOCAL_C_INCLUDES += $(MOD_REGHANDLER_ROOT_DIR)/include
 LOCAL_C_INCLUDES += $(MOD_SIPCLF_ROOT_DIR)/include
 LOCAL_C_INCLUDES += $(MOD_EARLYLOCK_ROOT_DIR)/include
+LOCAL_C_INCLUDES += $(MOD_CHECKSYNC_ROOT_DIR)/include
 
 # Self interface
 LOCAL_C_INCLUDES += $(LOCAL_PATH)

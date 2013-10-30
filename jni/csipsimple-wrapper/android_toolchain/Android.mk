@@ -59,6 +59,7 @@ LOCAL_STATIC_LIBRARIES += swig-glue pjsip pjmedia swig-glue pjnath pjlib-util pj
 LOCAL_STATIC_LIBRARIES += pjsip_mod_reghandler
 LOCAL_STATIC_LIBRARIES += pjsip_mod_sipclf
 LOCAL_STATIC_LIBRARIES += pjsip_mod_earlylock
+LOCAL_STATIC_LIBRARIES += pjsip_mod_checksync
 
 ifeq ($(MY_USE_ILBC),1)
 	LOCAL_STATIC_LIBRARIES += ilbc
@@ -96,10 +97,10 @@ endif
 
 ifeq ($(MY_USE_WEBRTC),1)
 
-	
+
 # Codecs wrap
 	LOCAL_STATIC_LIBRARIES +=  pj_webrtc_codec libwebrtc_audio_coding libwebrtc_cng libwebrtc_vad libwebrtc_neteq libwebrtc_resampler
-	
+
 #Codecs implementations 
 	LOCAL_STATIC_LIBRARIES += libwebrtc_ilbc libwebrtc_g711 
 	#libwebrtc_pcm16b
@@ -108,7 +109,7 @@ ifeq ($(MY_USE_WEBRTC),1)
 # AEC
 ifeq ($(USE_FIXED_POINT),1)
 	LOCAL_STATIC_LIBRARIES += libwebrtc_isacfix libwebrtc_aecm
-	
+
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
 	# We add neon libs that will be used only if neon autodetected by webrtc
 	LOCAL_STATIC_LIBRARIES += libwebrtc_isacfix_neon libwebrtc_aecm_neon 
@@ -124,7 +125,7 @@ endif
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)	
 	LOCAL_STATIC_LIBRARIES += libwebrtc_ns_neon
 endif
-	
+
 #Common
 	LOCAL_STATIC_LIBRARIES += libwebrtc_apm_utility libwebrtc_system_wrappers libwebrtc_spl 
 

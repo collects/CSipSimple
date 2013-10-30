@@ -22,7 +22,7 @@ LOCAL_CFLAGS := $(MY_PJSIP_FLAGS)
 
 LOCAL_SRC_FILES := src/pjsip_sipclf.c
 
-LOCAL_LDLIBS += -llog -ldl
+#LOCAL_LDLIBS += -llog -ldl
 LOCAL_STATIC_LIBRARIES += libgcc
 
 include $(BUILD_STATIC_LIBRARY)

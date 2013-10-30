@@ -34,3 +34,4 @@ include $(JNI_PATH)/csipsimple-wrapper/android_toolchain/Android.mk
 include $(JNI_PATH)/pjsip_mod_reghandler/android_toolchain/Android.mk
 include $(JNI_PATH)/pjsip_mod_sipclf/android_toolchain/Android.mk
 include $(JNI_PATH)/pjsip_mod_earlylock/android_toolchain/Android.mk
+include $(JNI_PATH)/pjsip_mod_checksync/android_toolchain/Android.mk
