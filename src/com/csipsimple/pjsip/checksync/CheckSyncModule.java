@@ -47,11 +47,17 @@ public class CheckSyncModule implements PjsipModule {
 
     @Override
     public void onBeforeStartPjsip() {
-	// TODO: ...
+        pjsua.mod_checksync_init(new Callback());
     }
 
     @Override
     public void onBeforeAccountStartRegistration(int pjId, SipProfile acc) {
 	// TODO: ...
+    }
+
+    private class Callback extends CheckSyncCallback {
+	public void on_event(String s) {
+	    
+	}
     }
 }

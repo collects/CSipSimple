@@ -15,6 +15,7 @@ class CheckSyncCallback
 {
 public:
     virtual ~CheckSyncCallback() {}
+    virtual void on_event(const char *) = 0;
 };
 
 extern "C" 

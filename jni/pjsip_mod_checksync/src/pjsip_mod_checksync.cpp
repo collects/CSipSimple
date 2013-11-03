@@ -21,8 +21,12 @@
 #include <pjsua.h>
 #include <pjsua-lib/pjsua_internal.h>
 #include "pjsip_mod_checksync.h"
+#include <android/log.h>
 
+#define TAG "pjsip_mod_checksync"
 #define THIS_FILE "pjsip_mod_checksync.cpp"
+#define LOGD(fmt, args...) __android_log_print(ANDROID_LOG_DEBUG, TAG, "%d:\t%s: "fmt, __LINE__, __FUNCTION__, ##args)
+#define LOGE(fmt, args...) __android_log_print(ANDROID_LOG_ERROR, TAG, "%d:\t%s: "fmt, __LINE__, __FUNCTION__, ##args)
 
 class CheckSync
 {
@@ -40,30 +44,73 @@ public:
 
 pj_status_t CheckSync::init(CheckSyncCallback* cb)
 {
+    LOGD("%p", cb);
+
     callback = cb;
+
     return pjsip_endpt_register_module(pjsua_get_pjsip_endpt(),	&stub);
 }
 
 pj_bool_t CheckSync::on_rx_request(pjsip_rx_data* data)
 {
+    //LOGD("%s", __FUNCTION__);
+
     if (callback == NULL) {
 	return PJ_FALSE;
     }
 
-    PJ_LOG(4, (THIS_FILE, "%s", __FUNCTION__));
-
     if (data == NULL || data->msg_info.cseq == NULL || data->msg_info.msg == NULL) {
 	return PJ_FALSE;
     }
-    
-    // TODO: ...
 
+    if (pjsip_method_cmp(&data->msg_info.msg->line.req.method,  &pjsip_notify_method) != 0) {
+	return PJ_FALSE;
+    }
+
+    int n = 0;
+    char event[512];
+    pj_str_t hdr_name = pj_str("Event");
+    pjsip_hdr *hdr = (pjsip_hdr*) pjsip_msg_find_hdr_by_name(data->msg_info.msg, &hdr_name, NULL);
+
+    memset(event, 0, 512);
+
+    //n = hdr->vptr->print_on(hdr, event, 512);
+    //n = pjsip_msg_print(data->msg_info.msg, event, 512);
+    n = pjsip_hdr_print_on(hdr, event, 512);
+
+    // this is buggy -- crashing
+    //LOGD("%p: %d, %s, %s", hdr, hdr->type, hdr->name, &event[0]);
+    //LOGD("%s", event);
+
+    char *s = strchr(event, ':');
+    if (s == NULL) {
+	LOGE("%s", event);
+	return PJ_FALSE;
+    }
+
+    for (++s; *s && isspace(*s); ++s) /* ignore ':' and spaces */ ;
+
+    if (strncmp(s, "check-sync", 10) == 0) {
+	for (s += 10; *s && (isspace(*s) || *s == ';'); ++s) /* ignore ';' and spaces */ ;
+	//LOGD("check-sync: %s", s);
+	callback->on_event(s);
+    }
+
+    /*
+    for (pjsip_hdr *h = data->msg_info.msg->hdr.next; h != &data->msg_info.msg->hdr; h = h->next) {
+	memset(event, 0, 512);
+	n = pjsip_hdr_print_on(h, event, 512);
+	// this is buggy -- crashing
+	LOGD("%p: %d, %s, %s", h, h->type, h->name, &event[0]);
+	LOGD("%d, %s", n, event);
+    }
+    */
     return PJ_FALSE;
 }
 
 pj_bool_t CheckSync::on_rx_response(pjsip_rx_data *data)
 {
-    PJ_LOG(4, (THIS_FILE, "%s", __FUNCTION__));
+    //LOGD("%s", __FUNCTION__);
 
     // TODO: ..
 
@@ -72,7 +119,7 @@ pj_bool_t CheckSync::on_rx_response(pjsip_rx_data *data)
 
 pj_status_t CheckSync::on_tx_request(pjsip_tx_data *data)
 {
-    PJ_LOG(4, (THIS_FILE, "%s", __FUNCTION__));
+    //LOGD("%s", __FUNCTION__);
 
     // TODO: ..
 
@@ -81,7 +128,7 @@ pj_status_t CheckSync::on_tx_request(pjsip_tx_data *data)
 
 pj_status_t CheckSync::on_tx_response(pjsip_tx_data *data)
 {
-    PJ_LOG(4, (THIS_FILE, "%s", __FUNCTION__));
+    //LOGD("%s", __FUNCTION__);
 
     // TODO: ..
 
@@ -90,7 +137,7 @@ pj_status_t CheckSync::on_tx_response(pjsip_tx_data *data)
 
 void CheckSync::on_tsx_state(pjsip_transaction *tsx, pjsip_event *event)
 {
-    PJ_LOG(4, (THIS_FILE, "%s", __FUNCTION__));
+    //LOGD("%s", __FUNCTION__);
 
     // TODO: ..
 }
