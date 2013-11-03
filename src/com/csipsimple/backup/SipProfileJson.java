@@ -172,7 +172,7 @@ public final class SipProfileJson {
     }
 
     private static final String KEY_ACCOUNTS = "accounts";
-    private final static String KEY_BUDDIES = "buddies";
+    private static final String KEY_BUDDIES = "buddies";
     private static final String KEY_SETTINGS = "settings";
 
     /**
